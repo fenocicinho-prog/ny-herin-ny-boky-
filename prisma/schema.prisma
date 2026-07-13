@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  VENDOR
+}
+
+enum BookCategory {
+  SCIENCE
+  MALAGASY
+  LITTERATURE
+  HISTOIRE
+  AUTRE
+}
+
+enum OrderType {
+  BUY
+  BORROW
+}
+
+enum PaymentMethod {
+  STRIPE
+  MOBILE_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  RECEIVED
+}
+
+enum SubscriptionPlan {
+  FREE
+  TWENTY_BOOKS
+  UNLIMITED
+}
+
+model User {
+  id                   String            @id @default(cuid())
+  email                String            @unique
+  password             String
+  firstName            String?
+  lastName             String?
+  role                 String            @default("BUYER")
+  companyName          String?
+  location             String?
+  postalCode           String?
+  reasonForJoining     String?
+  bookTypesSought      String?
+  subscriptionPlan     SubscriptionPlan  @default(FREE)
+  subscriptionActive   Boolean           @default(false)
+  subscriptionEndsAt   DateTime?
+  stripeSessionId      String?           @unique
+  stripeCustomerId     String?           @unique
+  stripeSubscriptionId String?           @unique  
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  books                Book[]
+  orders               Order[]
+}
+
+model Book {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  buyPrice    Float?
+  rentPrice   Float?
+  condition   String       @default("GOOD")
+  imageUrl    String?
+  category    BookCategory
+  vendorId    String
+  vendor      User         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  orders      Order[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Order {
+  id              String          @id @default(cuid())
+  type            OrderType
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus   @default(PENDING)
+  deliveryStatus  DeliveryStatus  @default(PENDING)
+  paidToVendor    Boolean         @default(false)
+  amount          Float
+  phoneNumber     String?
+  stripeSessionId String?
+  bookId          String
+  book            Book            @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}

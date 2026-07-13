@@ -1,0 +1,42 @@
+﻿----NY HERIN'NY BOKY----
+
+
+c'est une site de vente où on peut acheter, emprunter des livres
+
+*une partie client avec des accueils, une bouton de connexion ou de création de compte (client et vendeur)
+une barre de recherche,une partie où il y a les listes des meilleurs livres (les plus acheter), une partie où il y a les listes des entreprises vendeur en emprunteur des livres
+
+*Sur la partie client , on voit à droite les mennu du site, à Gauche tous à propos du client, au centre une barre de recherche et tous les listes des livres trié par leur catégorie (science, malagasy,...)
+
+*une partie de payement :
+. emprunter : commander et payer par numéro ou sur le site
+. payer :  commander et payer par numéro ou sur le site
+
+*Sur la partie vendeur : on voit à droite les mennu du site, à Gauche tous à propos du vendeur et les statistiques des livres vendus et empruntés, au centre une barre de recherche et tous les listes des livres partagés trié par leur catégorie (science, malagasy,...)
+
+*le partie connexion du client :
+1er page de connexion : demande de nom, prénom, mail, Mot de passe, une quiz sur la raison de se connecter sur le site, les types des livres à chercher, lieu
+
+*la partie connexion vendeur :
+1er page: une Champ sur le nom de la société, le Mot de passe, adresse mail, lieu, carte postale
+2em page: sur les abonnements (20 boky à publié par moi ""prix"", abonnement illimité ""prix"")
+3em page: ajouter des livres à emprunter et à acheter => champ nom, champ prix à acheter définitivement, prix à emprunter, ajouter de l'image et le prochainement à propos du livre, ajouter le type du livre
+
+
+
+---les outils ---
+
+1*NextJS 
+2*Vercel
+3*Stripe
+4*uploadThing
+
+. Dynamique : NextJS 15 = React + server action 
+. Payement : Stripe checkout en 20 ligne , Webhook géré níquel 
+. Upload : uploadThing ou cloudinary. Drag Drop image + PDF
+redimensionnement auto, pas de serveur à gérer 
+.BDD: prisma + postgre SQL / Supabase
+
+stack : Next.Js 15 Typescript Prisma Stripe uploadThing Tailwind
+
+
