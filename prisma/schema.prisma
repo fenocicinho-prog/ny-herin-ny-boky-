@@ -1,15 +1,16 @@
-generator client {
-  provider = "prisma-client-js"
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+generator client {
+  provider = "prisma-client-js"
 }
 
 enum Role {
   CLIENT
   VENDOR
+  ADMIN
 }
 
 enum BookCategory {
@@ -23,11 +24,13 @@ enum BookCategory {
 enum OrderType {
   BUY
   BORROW
+  BOOK
 }
 
 enum PaymentMethod {
   STRIPE
   MOBILE_MONEY
+  MVOLA
 }
 
 enum PaymentStatus {
@@ -49,60 +52,123 @@ enum SubscriptionPlan {
   UNLIMITED
 }
 
+enum MvolaPaymentStatus {
+  EN_ATTENTE_CLIENT
+  EN_ATTENTE_VERIFICATION
+  EN_ATTENTE_MATCH
+  PAYE
+  LIVRE
+  TERMINE
+  ERREUR_REF
+  ORPHELINE
+}
+
+enum AuditAction {
+  PAYMENT_INITIATED
+  CLIENT_REF_SUBMITTED
+  ADMIN_REF_RECEIVED
+  PAYMENT_VERIFIED
+  PAYMENT_CONFIRMED
+  SELLER_NOTIFIED
+  DELIVERY_CONFIRMED
+  VENDOR_PAID
+  FRAUD_DETECTED
+}
+
+enum SellerPlanType {
+  COMMISSION
+  ABONNEMENT
+}
+
+model Seller {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+  plantype SellerPlanType @default(COMMISSION)
+  isActive Boolean @default(false)
+  mvolaNumber String? // <- AJOUTÉ ICI POUR MVOLA
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model User {
-  id                   String            @id @default(cuid())
-  email                String            @unique
-  password             String
-  firstName            String?
-  lastName             String?
-  role                 String            @default("BUYER")
-  companyName          String?
-  location             String?
-  postalCode           String?
-  reasonForJoining     String?
-  bookTypesSought      String?
-  subscriptionPlan     SubscriptionPlan  @default(FREE)
-  subscriptionActive   Boolean           @default(false)
-  subscriptionEndsAt   DateTime?
-  stripeSessionId      String?           @unique
-  stripeCustomerId     String?           @unique
-  stripeSubscriptionId String?           @unique  
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  books                Book[]
-  orders               Order[]
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  firstName String?
+  lastName String?
+  phoneNumber String?
+  role Role @default(CLIENT)
+  isAdmin Boolean @default(false)
+  companyName String?
+  location String?
+  postalCode String?
+  reasonForJoining String?
+  bookTypesSought String?
+  sellerPlanType SellerPlanType? @default(COMMISSION)
+  subscriptionPlan SubscriptionPlan @default(FREE)
+  subscriptionActive Boolean @default(false)
+  subscriptionEndsAt DateTime?
+  stripeSessionId String? @unique
+  stripeCustomerId String? @unique
+  stripeSubscriptionId String? @unique
+  mvolaNumber String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  books Book[]
+  orders Order[] @relation("Buyer")
+  seller Seller?
+  soldItems  OrderItem[] @relation("SellerOrders")
 }
 
 model Book {
-  id          String       @id @default(cuid())
-  title       String
+  id String @id @default(cuid())
+  title String
   description String?
-  buyPrice    Float?
-  rentPrice   Float?
-  condition   String       @default("GOOD")
-  imageUrl    String?
-  category    BookCategory
-  vendorId    String
-  vendor      User         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  orders      Order[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  buyPrice Float?
+  rentPrice Float?
+  condition String @default("GOOD")
+  imageUrl String?
+  category BookCategory
+  vendorId String
+  vendor User @relation(fields: [vendorId], references: [id], onDelete: Cascade) // <- CHANGÉ User -> Seller
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orderItems OrderItem[] // <- RENOMMÉ pour éviter confusion
 }
 
 model Order {
-  id              String          @id @default(cuid())
-  type            OrderType
-  paymentMethod   PaymentMethod
-  paymentStatus   PaymentStatus   @default(PENDING)
-  deliveryStatus  DeliveryStatus  @default(PENDING)
-  paidToVendor    Boolean         @default(false)
-  amount          Float
-  phoneNumber     String?
+  id String @id @default(cuid())
+  type OrderType
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus
+  deliveryStatus DeliveryStatus
+  paidToVendor Boolean
+  amount Float
+  phoneNumber String?
   stripeSessionId String?
-  bookId          String
-  book            Book            @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  mvolaFee Float?
+  mvolaStatus MvolaPaymentStatus
+  clientTrxRef String @unique
+  adminTrxRef String?
+  platformFee Float
+  vendorPaymentAmount Float
+  items OrderItem[]
+  userId String
+  user User @relation("Buyer", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId String
+  book Book @relation(fields: [bookId], references: [id])
+  sellerId String
+  seller User @relation("SellerOrders", fields: [sellerId], references: [id]) // <- Déjà bon
+  quantity Int
+  price Float
+  createdAt DateTime @default(now())
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth, getSessionUser } from "@/lib/auth";
+import { requireAuth, getSessionUser, isSubscriptionValid } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -18,11 +18,39 @@ const bookSchema = z.object({
 });
 
 export async function addBookAction(formData: FormData) {
-  const user = await getSessionUser();
-  if (!user || user.role!== "VENDOR") {
-    throw new Error("Midira aloha."); // <- throw au lieu de return
+    const user = await getSessionUser();
+    
+  if (!user || user.role !== "VENDOR") {
+    throw new Error("Midira aloha.");
   }
 
+  // 1. Vérification explicite du mode
+  const isCommission = user.sellerPlanType === "COMMISSION";
+
+  // 2. Si COMMISSION, on définit une limite très haute immédiatement et on sort de la logique d'abonnement
+  let maxBooks = 99999; // Illimité pour commission
+
+  if (!isCommission) {
+    // 3. Logique UNIQUEMENT pour les abonnés (SUBSCRIPTION)
+    if (!isSubscriptionValid(user)) {
+      redirect("/vendeur/dashboard/abonnement");
+    }
+
+    // Définir la limite selon le plan payé
+    if (user.subscriptionPlan === "UNLIMITED") {
+      maxBooks = 99999;
+    } else if (user.subscriptionPlan === "TWENTY_BOOKS") {
+      maxBooks = 20;
+    } else if (user.subscriptionPlan === "FREE") {
+      maxBooks = 1;
+    } else {
+      // Cas par défaut si le plan est inconnu (souvent la cause du bug "reste à 1")
+      maxBooks = 0; 
+    }
+  }
+
+  // 4. Vérification finale
+  const bookCount = await prisma.book.count({ where: { vendorId: user.id } });
   const parsed = bookSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
@@ -31,23 +59,13 @@ export async function addBookAction(formData: FormData) {
     category: formData.get("category"),
     imageUrl: formData.get("imageUrl") || undefined,
   });
+  // Si on est en commission, maxBooks est 99999, donc cette condition sera toujours fausse.
+  if (bookCount >= maxBooks) {
+    redirect("/vendeur/dashboard/abonnement");
+  };// 5. Création du livre
 
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message || "Données invalides"); // <- throw
-  }
-
-  const bookCount = await prisma.book.count({ where: { vendorId: user.id } });
-  const maxBooks =
-    user.subscriptionPlan === "UNLIMITED"
-     ? Infinity
-      : user.subscriptionPlan === "TWENTY_BOOKS"
-       ? 20
-        : user.subscriptionPlan === "FREE"
-       ? 1
-        : 0;
-
-  if (bookCount >= maxBooks) {
-    redirect("/vendeur/dashboard/abonnement"); // <- redirect direct si limite
+  throw new Error("Données invalides");
   }
 
   await prisma.book.create({
@@ -60,17 +78,23 @@ export async function addBookAction(formData: FormData) {
       imageUrl: parsed.data.imageUrl,
       vendorId: user.id,
     },
-  })
+  });
   
-  revalidatePath('/')
-  revalidatePath('/vendeur')
-  revalidatePath('/vendeur/dashboard')
+  revalidatePath('/');
+  revalidatePath('/vendeur');
+  revalidatePath('/vendeur/dashboard');
   
-  redirect("/vendeur/dashboard"); // <- redirect à la fin
-}
-
-export async function createSubscriptionCheckoutAction(plan: "TWENTY_BOOKS" | "UNLIMITED"): Promise<void> { // <- Promise<void>
+  redirect("/vendeur/dashboard");
+}   
+export async function createSubscriptionCheckoutAction(plan: "TWENTY_BOOKS" | "UNLIMITED"): Promise<void> {
   const user = await requireAuth("VENDOR");
+
+  // 🔒 SÉCURITÉ : Vérifier que l'utilisateur est bien en mode ABONNEMENT
+  // Si l'utilisateur est en mode COMMISSION, il ne devrait pas accéder à ce paiement.
+  if (user.sellerPlanType === "COMMISSION") {
+    throw new Error("Accès refusé : Cette option est réservée aux vendeurs avec abonnement.");
+  }
+
   const planInfo = SUBSCRIPTION_PLANS[plan];
 
   try {
@@ -94,37 +118,49 @@ export async function createSubscriptionCheckoutAction(plan: "TWENTY_BOOKS" | "U
         type: "subscription",
         planId: plan,
         userId: user.id,
+        // On s'assure que le plan type est bien noté
+        sellerPlanType: "ABONNEMENT", 
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/vendeur/dashboard?cancelled=true`,
     });
 
-    if (!session.url) throw new Error("Impossible de créer la session de paiement");
-    redirect(session.url);
-  } catch (e) {
-    console.error(e);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        subscriptionPlan: plan,
-        subscriptionActive: true,
-        subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
-    });
-    redirect("/vendeur/dashboard/nouveau-livre");
-  }
-}
+    if (!session.url) {
+      throw new Error("Impossible de créer la session de paiement");
+    }
 
-export async function skipSubscriptionForDevAction(plan: "FREE" | "TWENTY_BOOKS" | "UNLIMITED"): Promise<void> {
+    // Redirection vers Stripe
+    redirect(session.url);
+
+  } catch (error) {
+    console.error("Erreur Stripe Checkout:", error);
+    
+    // ⚠️ CORRECTION CRITIQUE :
+    // On NE DOIT PAS mettre à jour la DB ici.
+    // Si on fait ça, une simple erreur de réseau activerait l'abonnement gratuitement.
+    // La mise à jour (subscriptionActive: true) doit se faire UNIQUEMENT dans le Webhook
+    // qui reçoit la confirmation "checkout.session.completed" de Stripe.
+    
+    throw new Error("Erreur lors de la connexion à Stripe. Veuillez réessayer.");
+  }
+}   
+export async function skipSubscriptionForDevAction(plan: "FREE" | "TWENTY_BOOKS" | "UNLIMITED") {
   const user = await requireAuth("VENDOR");
+  
   await prisma.user.update({
     where: { id: user.id },
-    data: { subscriptionPlan: plan, subscriptionActive: true, subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)},
+    data: { 
+      subscriptionPlan: plan, 
+      subscriptionActive: true, 
+      subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      // ✅ COHÉRENCE : On force le mode ABONNEMENT
+      sellerPlanType: "ABONNEMENT", 
+    },
   });
   redirect("/vendeur/dashboard/nouveau-livre");
 }
 
-export async function activateFreeSubscriptionAction(): Promise<void> { // <- Promise<void>
+export async function activateFreeSubscriptionAction() {
   const user = await requireAuth("VENDOR");
 
   await prisma.user.update({
@@ -132,12 +168,13 @@ export async function activateFreeSubscriptionAction(): Promise<void> { // <- Pr
     data: {
       subscriptionPlan: "FREE",
       subscriptionActive: true,
-      subscriptionEndsAt: null
+      subscriptionEndsAt: null,
+      // ✅ COHÉRENCE : On force le mode ABONNEMENT
+      sellerPlanType: "ABONNEMENT", 
     },
   });
-  redirect("/vendeur/dashboard"); // <- AJOUTÉ le redirect qui manquait
-}
-
+  redirect("/vendeur/dashboard");
+}   
 export async function deleteBookAction(bookId: string): Promise<void> {
   const user = await getSessionUser()
   if (!user) throw new Error('Non connecte') // <- throw
@@ -150,20 +187,42 @@ export async function deleteBookAction(bookId: string): Promise<void> {
   redirect('/vendeur/dashboard') // <- redirect pour refresh
 }
 
-export async function updateBookAction(prevState: unknown, formData: FormData ): Promise<void> {
+const updateBookSchema = z.object({
+  title: z.string().min(2, "Titre requis"),
+  buyPrice: z.coerce.number().min(0).optional(),
+  rentPrice: z.coerce.number().min(0).optional(),
+  description: z.string().optional(),
+  category: z.enum(["SCIENCE", "MALAGASY", "LITTERATURE", "HISTOIRE", "AUTRE"]),
+  imageUrl: z.string().optional(),
+});
+
+export async function updateBookAction(prevState: unknown, formData: FormData ): Promise<{ error?: string }> {
   const bookId = formData.get('bookId') as string
   const user = await getSessionUser()
-  if (!user) throw new Error('Non connecte') // <- throw
+  if (!user) throw new Error('Non connecte')
+
+  const parsed = updateBookSchema.safeParse({
+    title: formData.get('title'),
+    buyPrice: formData.get('buyPrice'),
+    rentPrice: formData.get('rentPrice'),
+    description: formData.get('description'),
+    category: formData.get('category'),
+    imageUrl: formData.get('imageUrl'),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "Données invalides" };
+  }
 
   await prisma.book.update({
     where: { id: bookId, vendorId: user.id },
     data: {
-      title: formData.get('title') as string,
-      buyPrice: parseFloat(formData.get('buyPrice') as string),
-      rentPrice: parseFloat(formData.get('rentPrice') as string),
-      description: formData.get('description') as string,
-      category: formData.get('category') as BookCategory,
-      imageUrl: formData.get('imageUrl') as string,
+      title: parsed.data.title,
+      buyPrice: parsed.data.buyPrice,
+      rentPrice: parsed.data.rentPrice,
+      description: parsed.data.description,
+      category: parsed.data.category as BookCategory,
+      imageUrl: parsed.data.imageUrl,
     }
   })
   revalidatePath('/')
