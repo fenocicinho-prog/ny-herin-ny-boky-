@@ -1,26 +1,23 @@
+"use client";
+
 import { Header } from "@/components/layout/Header";
 import { SubscriptionPlans } from "@/components/forms/SubscriptionPlans";
-import { getSessionUser, isSubscriptionValid } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { useLanguage } from "@/lib/LanguageContext";
 
-
-export default async function VendorSubscriptionPage() {
-  const user = await getSessionUser();
-  if (!user || user.role !== "VENDOR") redirect("/inscription/vendeur");
-  if (isSubscriptionValid(user)) redirect("/vendeur/dashboard");
+export default function VendorSubscriptionPage() {
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      <Header user={user} />
+      <Header />
       <main className="mx-auto max-w-3xl px-4 py-16">
-        
         <h1 className="mb-2 text-center text-2xl font-bold text-stone-900">
-          Abonnement
+          {t("subscription.title")}
         </h1>
         <p className="mb-8 text-center text-stone-500">
-          Efa lany ny abonnement anao, misafidiana amin'ireto promotion mirary ireto
+          {t("subscription.subtitle")}
         </p>
-        <SubscriptionPlans showFreePlan={false}/>
+        <SubscriptionPlans showFreePlan={false} />
       </main>
     </div>
   );

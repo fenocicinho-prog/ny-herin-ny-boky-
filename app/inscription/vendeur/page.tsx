@@ -1,17 +1,15 @@
+"use client";
+
 import { Header } from "@/components/layout/Header";
 import { VendorRegisterForm } from "@/components/forms/VendorRegisterForm";
-import { getSessionUser, isSubscriptionValid } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { useLanguage } from "@/lib/LanguageContext";
 
-export default async function VendorRegisterPage() {
-  const user = await getSessionUser();
-  if (user?.role === "VENDOR" && isSubscriptionValid(user)) {
-    redirect("/vendeur");
-  }
+export default function VendorRegisterPage() {
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      <Header user={user} />
+      <Header />
       <main className="mx-auto max-w-lg px-4 py-16">
         <div className="mb-6 flex items-center justify-center gap-2 text-sm text-amber-700">
           <span className="rounded-full bg-amber-700 px-3 py-1 text-white">
@@ -27,10 +25,10 @@ export default async function VendorRegisterPage() {
           </span>
         </div>
         <h1 className="mb-2 text-center text-2xl font-bold text-stone-900">
-          Fisoratana mpivarotra
+          {t("registerVendor.title")}
         </h1>
         <p className="mb-8 text-center text-stone-500">
-          Dingana 1 — Fampahafantarana orinasa
+          {t("registerVendor.subtitle")}
         </p>
         <div className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
           <VendorRegisterForm />

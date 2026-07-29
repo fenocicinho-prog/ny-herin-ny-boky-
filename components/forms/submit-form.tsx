@@ -3,8 +3,10 @@
 import { submitMvolaProof } from "@/app/actions/orders";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function SubmitMvolaProofForm({ orderId }: { orderId: string }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +25,9 @@ export function SubmitMvolaProofForm({ orderId }: { orderId: string }) {
       setError(result.error);
       setIsSubmitting(false);
     } else if (result?.success) {
-      // ✅ CORRECTION : Rediriger avec l'ID dans l'URL
       router.push(`/client/paiement-en-attente?commandeId=${result.orderId}`);
     } else {
-      setIsSubmitting(false); // Fallback si la réponse est inattendue
+      setIsSubmitting(false);
     }
   }
 
@@ -40,7 +41,7 @@ export function SubmitMvolaProofForm({ orderId }: { orderId: string }) {
 
       <div>
         <label htmlFor="clientTrxRef" className="block text-sm font-medium text-gray-700">
-          Référence de transaction (reçue par SMS)
+          {t("payment.mvolaRef")}
         </label>
         <input
           type="text"
@@ -48,7 +49,7 @@ export function SubmitMvolaProofForm({ orderId }: { orderId: string }) {
           id="clientTrxRef"
           required
           pattern="[0-9A-Z]+"
-          placeholder="Ex: 85236941"
+          placeholder={t("payment.mvolaRefPlaceholder")}
           disabled={isSubmitting}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
         />
@@ -59,8 +60,8 @@ export function SubmitMvolaProofForm({ orderId }: { orderId: string }) {
         disabled={isSubmitting}
         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Vérification en cours..." : "Valider mon paiement"}
+        {isSubmitting ? t("payment.mvolaValidating") : t("payment.mvolaValidate")}
       </button>
     </form>
   );
-}   
+}

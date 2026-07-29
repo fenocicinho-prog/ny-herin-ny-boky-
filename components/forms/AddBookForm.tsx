@@ -6,9 +6,10 @@ import { Check, Upload } from "lucide-react";
 import { UploadButton } from "@/lib/uploadthing";
 import { addBookAction } from "@/app/actions/books";
 import { CATEGORY_LIST, CATEGORY_LABELS } from "@/lib/constants";
-
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function AddBookForm() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState("");
   const [state, formAction, pending] = useActionState(
@@ -20,27 +21,28 @@ export function AddBookForm() {
     null
   );
 
-  // L'action redirige automatiquement vers le dashboard après succès
   return (
     <form action={formAction} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-stone-700">
-          Anaran&apos;ny boky
+          {t("book.title")}
         </label>
         <input
           name="name"
           required
+          placeholder={t("book.titlePlaceholder")}
           className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-stone-700">
-          Famaritana
+          {t("book.description")}
         </label>
         <textarea
           name="description"
           rows={3}
+          placeholder={t("book.descriptionPlaceholder")}
           className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
         />
       </div>
@@ -48,7 +50,7 @@ export function AddBookForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-stone-700">
-            Vidiny hividy (Ar)
+            {t("book.buyPrice")}
           </label>
           <input
             name="buyPrice"
@@ -59,7 +61,7 @@ export function AddBookForm() {
         </div>
         <div>
           <label className="block text-sm font-medium text-stone-700">
-            Vidiny hiray (Ar)
+            {t("book.rentPrice")}
           </label>
           <input
             name="rentPrice"
@@ -72,7 +74,7 @@ export function AddBookForm() {
 
       <div>
         <label className="block text-sm font-medium text-stone-700">
-          Sokajy
+          {t("book.category")}
         </label>
         <select
           name="category"
@@ -89,13 +91,13 @@ export function AddBookForm() {
 
       <div>
         <label className="block text-sm font-medium text-stone-700">
-          Sary
+          {t("book.imageUrl")}
         </label>
         <div className="mt-2">
           {imageUrl ? (
             <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">
               <Check className="h-4 w-4" />
-              Sary voafafy
+              ✓ {t("book.submit")}
             </div>
           ) : (
             <UploadButton
@@ -118,10 +120,10 @@ export function AddBookForm() {
                   return ready ? (
                     <span className="flex items-center gap-2">
                       <Upload className="h-4 w-4" />
-                      Ampidiro sary
+                      {t("book.imageUrl")}
                     </span>
                   ) : (
-                    "Miandry..."
+                    t("payment.loading")
                   );
                 },
               }}
@@ -130,14 +132,12 @@ export function AddBookForm() {
         </div>
       </div>
 
-      {/* Les erreurs sont gérées par les redirections ou les alertes globales */}
-
       <button
         type="submit"
         disabled={pending}
         className="w-full rounded-lg bg-amber-700 py-3 font-medium text-white hover:bg-amber-800 disabled:opacity-50"
       >
-        {pending ? "Miandry..." : "Ampidiro ny boky"}
+        {pending ? t("book.submitLoading") : t("book.submit")}
       </button>
     </form>
   );

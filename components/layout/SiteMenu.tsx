@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Home,
@@ -7,22 +9,25 @@ import {
   Store,
   HelpCircle,
 } from "lucide-react";
-
-const menuItems = [
-  { href: "/", icon: Home, label: "Fandraisana" },
-  { href: "/client", icon: BookOpen, label: "Boky" },
-  { href: "/client", icon: ShoppingBag, label: "Kaomandy" },
-  { href: "/inscription/client", icon: User, label: "Kaonty" },
-  { href: "/inscription/vendeur", icon: Store, label: "Mpivarotra" },
-  { href: "#", icon: HelpCircle, label: "Fanampiana" },
-];
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function SiteMenu() {
+  const { t } = useLanguage();
+
+  const menuItems = [
+    { href: "/", icon: Home, label: t("nav.home") },
+    { href: "/client", icon: BookOpen, label: t("book.title") },
+    { href: "/client", icon: ShoppingBag, label: t("vendorDashboard.sales") },
+    { href: "/connexion", icon: User, label: t("nav.profile") },
+    { href: "/inscription/vendeur", icon: Store, label: t("nav.vendor") },
+    { href: "#", icon: HelpCircle, label: "Fanampiana" },
+  ];
+
   return (
     <aside className="w-full shrink-0 lg:w-56">
       <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-amber-700">
-          Menu
+          {t("nav.home")}
         </h3>
         <nav className="space-y-1">
           {menuItems.map((item) => (

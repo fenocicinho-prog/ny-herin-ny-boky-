@@ -1,15 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { LogIn, UserPlus } from "lucide-react";
 import Image from "next/image";
 import { SITE_NAME } from "@/lib/constants";
 import { logoutAction } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/auth";
+import { useLanguage } from "@/lib/LanguageContext";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface HeaderProps {
   user?: SessionUser | null;
 }
 
 export function Header({ user }: HeaderProps) {
+  const { t } = useLanguage();
+
   return (
     <header className="sticky top-0 z-50 border-b border-amber-100 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
@@ -28,6 +34,7 @@ export function Header({ user }: HeaderProps) {
         </Link>
 
         <nav className="flex items-center gap-3">
+          <LanguageSwitcher />
           {user ? (
             <>
               <Link
@@ -35,15 +42,15 @@ export function Header({ user }: HeaderProps) {
                 className="rounded-lg px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50"
               >
                 {user.role === "VENDOR"
-                  ? user.companyName || "Tableau de bord"
-                  : `${user.firstName || "Mon"} espace`}
+                  ? user.companyName || t("nav.vendor")
+                  : `${user.firstName || "Mombamomba ahy"} ${t("nav.profile")}`}
               </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"
                   className="rounded-lg border border-amber-200 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50"
                 >
-                  Miala
+                  {t("nav.logout")}
                 </button>
               </form>
             </>
@@ -54,14 +61,14 @@ export function Header({ user }: HeaderProps) {
                 className="flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50"
               >
                 <LogIn className="h-4 w-4" />
-                Hiditra
+                {t("nav.login")}
               </Link>
               <Link
                 href="/inscription/client"
                 className="flex items-center gap-1 rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800"
               >
                 <UserPlus className="h-4 w-4" />
-                Hisoratra
+                {t("nav.register")}
               </Link>
             </>
           )}

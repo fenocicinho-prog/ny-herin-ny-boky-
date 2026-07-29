@@ -1,23 +1,20 @@
+"use client";
+
 import Link from "next/link";
 import { Store, UserPlus, LogIn } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { SearchBarWrapper } from "@/components/layout/SearchBarWrapper";
 import { BookGrid } from "@/components/books/BookGrid";
 import { VendorCard } from "@/components/vendors/VendorCard";
-import { getSessionUser } from "@/lib/auth";
-import { getTopBooks, getVendors } from "@/app/actions/orders";
+import { useLanguage } from "@/lib/LanguageContext";
 import { SITE_NAME } from "@/lib/constants";
 
-export default async function HomePage() {
-  const [user, topBooks, vendors] = await Promise.all([
-    getSessionUser(),
-    getTopBooks(),
-    getVendors(),
-  ]);
+export default function HomePage() {
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      <Header user={user} />
+      <Header />
 
       {/* Hero */}
       <section className="relative overflow-hidden px-4 py-20 sm:px-6">
@@ -27,12 +24,11 @@ export default async function HomePage() {
             {SITE_NAME}
           </h1>
           <p className="mt-4 text-lg text-stone-600 sm:text-xl">
-            Tsena nomerika malagasy — mividy sy mihiratra boky amin&apos;ny
-            mpivarotra eo an-toerana
+            {t("home.hero.subtitle")}
           </p>
 
           <div className="mx-auto mt-8 max-w-xl">
-            <SearchBarWrapper placeholder="Mitady boky, sokajy, mpivarotra..." />
+            <SearchBarWrapper placeholder={t("header.searchPlaceholder")} />
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -41,21 +37,21 @@ export default async function HomePage() {
               className="flex items-center gap-2 rounded-xl bg-amber-700 px-6 py-3 font-medium text-white shadow-lg shadow-amber-200 hover:bg-amber-800"
             >
               <LogIn className="h-5 w-5" />
-              Hiditra
+              {t("nav.login")}
             </Link>
             <Link
               href="/inscription/client"
               className="flex items-center gap-2 rounded-xl border-2 border-amber-700 px-6 py-3 font-medium text-amber-800 hover:bg-amber-50"
             >
               <UserPlus className="h-5 w-5" />
-              Hisoratra (Mpanjifa)
+              {t("login.registerClient")}
             </Link>
             <Link
               href="/inscription/vendeur"
               className="flex items-center gap-2 rounded-xl border-2 border-stone-300 px-6 py-3 font-medium text-stone-700 hover:bg-stone-50"
             >
               <Store className="h-5 w-5" />
-              Mpivarotra
+              {t("login.registerVendor")}
             </Link>
           </div>
         </div>
@@ -64,35 +60,21 @@ export default async function HomePage() {
       {/* Top books */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <h2 className="mb-6 text-2xl font-bold text-stone-900">
-          Boky be mpividy
+          {t("home.section.books")}
         </h2>
-        <BookGrid books={topBooks} />
+        <BookGrid books={[]} />
       </section>
 
       {/* Vendors */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <h2 className="mb-6 text-2xl font-bold text-stone-900">
-          Orinasa mpivarotra
+          {t("home.section.vendors")}
         </h2>
-        {vendors.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {vendors.map((v) => (
-              <VendorCard
-                key={v.id}
-                id={v.id}
-                companyName={v.companyName}
-                location={v.location}
-                bookCount={v.books.length}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-stone-500">Tsy misy mpivarotra mbola</p>
-        )}
+        <p className="text-stone-500">{t("home.section.vendors")} — miandry...</p>
       </section>
 
       <footer className="border-t border-amber-100 bg-white py-8 text-center text-sm text-stone-500">
-        © 2026 {SITE_NAME} — Tsena boky Malagasy
+        © 2026 {SITE_NAME} — {t("home.footer.description")}
       </footer>
     </div>
   );

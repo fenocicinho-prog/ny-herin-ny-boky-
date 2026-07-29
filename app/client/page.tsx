@@ -1,3 +1,5 @@
+"use client";
+
 import { Header } from "@/components/layout/Header";
 import { ClientProfile } from "@/components/layout/ClientProfile";
 import { SiteMenu } from "@/components/layout/SiteMenu";
@@ -5,78 +7,53 @@ import { SearchBarWrapper } from "@/components/layout/SearchBarWrapper";
 import { CategoryFilter } from "@/components/books/CategoryFilter";
 import { BookGrid } from "@/components/books/BookGrid";
 import { DeliveryAlerts } from "@/components/orders/DeliveryAlerts";
-import { getSessionUser } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { useLanguage } from "@/lib/LanguageContext";
+import { useEffect, useState } from "react";
 
-export default async function ClientDashboard({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; category?: string; success?: string; payment?: string }>;
-}) {
-  const user = await getSessionUser();
-  if (!user) return null;
+type ClientDashboardProps = {
+  initialData: {
+    books: any[];
+    ordersInTransit: any[];
+    success?: string;
+    payment?: string;
+    query?: string;
+    category?: string;
+  };
+};
 
-  const params = await searchParams;
-  const query = params.q || "";
-  const category = params.category || "ALL";
-
-  const where: Record<string, unknown> = {};
-  if (query) {
-    where.OR = [
-      { name: { contains: query } },
-      { description: { contains: query } },
-    ];
-  }
-  if (category !== "ALL") {
-    where.category = category;
-  }
-
-  const books = await prisma.book.findMany({
-    where,
-    include: {
-      vendor: { select: { companyName: true, location: true } },
-      orders: { where: { paymentStatus: "COMPLETED" }, select: { id: true, deliveryStatus: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  // Récupérer commandes en transit pour l'alerte
-  const ordersInTransit = await prisma.order.findMany({
-    where: { userId: user.id, paymentStatus: "COMPLETED", deliveryStatus: "IN_TRANSIT" },
-    include: { book: { select: { id: true, title: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export function ClientDashboardContent({ initialData }: ClientDashboardProps) {
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <Header user={user} />
+      <Header />
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 lg:flex-row">
-        <ClientProfile user={user} />
+        <ClientProfile user={null} />
 
         <main className="min-w-0 flex-1 space-y-6">
-          {params.success && (
+          {initialData.success && (
             <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">
-              Fandoavana nahomby! Misaotra.
+              {t("clientDashboard.success")}
             </div>
           )}
-          {params.payment === "confirmed" && (
+          {initialData.payment === "confirmed" && (
             <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">
-              Mobile Money voafidy! Ny kaomandinao efa voarakitra.
+              {t("clientDashboard.paymentPending")}
             </div>
           )}
 
-          <SearchBarWrapper defaultValue={query} />
-          {ordersInTransit.length > 0 && (
+          <SearchBarWrapper defaultValue={initialData.query || ""} />
+          {initialData.ordersInTransit?.length > 0 && (
             <div className="mb-4">
-              <DeliveryAlerts orders={ordersInTransit} />
+              <DeliveryAlerts orders={initialData.ordersInTransit} />
             </div>
           )}
           <CategoryFilter
-            activeCategory={category}
+            activeCategory={initialData.category || "ALL"}
             basePath="/client"
-            searchQuery={query}
+            searchQuery={initialData.query || ""}
           />
-          <BookGrid books={books} showActions />
+          <BookGrid books={initialData.books} showActions />
         </main>
 
         <SiteMenu />

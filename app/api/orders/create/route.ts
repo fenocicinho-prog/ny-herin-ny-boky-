@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth" 
-import { v4 as uuidv4 } from 'uuid'
+import { getSessionUser } from "@/lib/auth"
 
 type CartItem = {
   bookId: string
   qty: number
-  // On supprime price et sellerId du front. Trop dangereux
 }
 
-// Barème commission "ny herin'ny boky"
+// Barème commission "ny herin'ny boky" (harmonisé avec createOrderAction)
 function calculerCommission(prix: number): number {
   if (prix <= 50000) return Math.round(prix * 0.08)
   if (prix <= 90000) return Math.round(prix * 0.07)
@@ -20,7 +18,7 @@ export async function POST(req: NextRequest) {
   try {
     // 1. AUTH
     const user = await getSessionUser()
-    if(!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 })
+    if (!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 })
 
     // 2. VALIDATION INPUT
     const { cart }: { cart: CartItem[] } = await req.json()
@@ -29,30 +27,26 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. FETCH BDD + SÉCURITÉ
-    const bookIds = [...new Set(cart.map(i => i.bookId))] // enleve doublons
+    const bookIds = [...new Set(cart.map(i => i.bookId))]
     const booksFromDB = await prisma.book.findMany({ 
       where: { id: { in: bookIds }},
-      select: { id: true, price: true, stock: true, sellerId: true, title: true }
+      select: { id: true, buyPrice: true, vendorId: true, title: true }
     })
 
     if (booksFromDB.length !== bookIds.length) {
       return NextResponse.json({ error: "Un des livres n'existe plus" }, { status: 404 })
     }
 
-    // 4. RECALCUL TOTAL + COMMISSIONS + VÉRIF STOCK
+    // 4. RECALCUL TOTAL + COMMISSIONS
     let realTotal = 0
     let totalPlatformFee = 0
     const orderItemsData = []
 
     for (const item of cart) {
       const book = booksFromDB.find(b => b.id === item.bookId)
-      if (!book) continue // sécurité
+      if (!book) continue
 
-      if (book.stock < item.qty) {
-        return NextResponse.json({ error: `Stock insuffisant: ${book.title}` }, { status: 400 })
-      }
-
-      const itemSubtotal = book.price * item.qty
+      const itemSubtotal = (book.buyPrice ?? 0) * item.qty
       const itemCommission = calculerCommission(itemSubtotal)
 
       realTotal += itemSubtotal
@@ -60,45 +54,44 @@ export async function POST(req: NextRequest) {
 
       orderItemsData.push({
         bookId: book.id,
-        sellerId: book.sellerId, // <- ON PREND DE LA BDD, PAS DU FRONT
+        sellerId: book.vendorId,
         quantity: item.qty,
-        price: book.price, // <- PRIX OFFICIEL BDD
+        price: book.buyPrice ?? 0,
       })
     }
 
     const vendorPaymentAmount = realTotal - totalPlatformFee
 
     // 5. CRÉATION COMMANDE
-    const clientTrxRef = `MB-${uuidv4().slice(0, 8).toUpperCase()}`
+    const clientTrxRef = `MB-${Date.now()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
     
     const order = await prisma.order.create({
       data: {
         userId: user.id,
         clientTrxRef,
-        amount: realTotal, // <- CORRIGÉ
-        paymentMethod: "MVOLA",
+        amount: realTotal,
+        paymentMethod: "MOBILE_MONEY",
         paymentStatus: "PENDING",
         mvolaStatus: "EN_ATTENTE_CLIENT",
         deliveryStatus: "PENDING",
         paidToVendor: false,
-        platformFee: totalPlatformFee, // <- CORRIGÉ
-        vendorPaymentAmount: vendorPaymentAmount, // <- CORRIGÉ
-        type: "BOOK",
+        type: "BUY",
+        platformFee: totalPlatformFee,
+        vendorPaymentAmount: vendorPaymentAmount,
         items: {
-          create: orderItemsData // <- DONNÉES SÉCURISÉES
+          create: orderItemsData
         }
       },
       include: { items: { include: { book: true } } }
     })
 
     // 6. RETOUR FRONT
-    // Numéro MVola marchand principal - à mettre dans .env
     const sellerMvolaNumber = process.env.MVOLA_MERCHANT_NUMBER || "0320000000"
 
     return NextResponse.json({ 
       success: true, 
       orderId: order.id,
-      amount: order.amount, // <- CORRIGÉ
+      amount: order.amount,
       clientTrxRef: order.clientTrxRef,
       sellerMvolaNumber
     }, { status: 201 })

@@ -1,7 +1,6 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useRouter } from "next/navigation";
 import {
   activateFreeSubscriptionAction,
   createSubscriptionCheckoutAction,
@@ -9,11 +8,14 @@ import {
 } from "@/app/actions/books";
 import { SUBSCRIPTION_PLANS } from "@/lib/stripe-server";
 import { formatPrice } from "@/lib/constants";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface Props { 
   showFreePlan?: boolean
 }
+
 export function SubscriptionPlans({ showFreePlan = true }: Props) {
+  const { t } = useLanguage();
   const plans = [ ...(showFreePlan ? [
     { key: "FREE" as const, ...SUBSCRIPTION_PLANS.FREE }] : []),
     { key: "TWENTY_BOOKS" as const, ...SUBSCRIPTION_PLANS.TWENTY_BOOKS },
@@ -37,26 +39,31 @@ export function SubscriptionPlans({ showFreePlan = true }: Props) {
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-amber-600" />
               {plan.key === 'FREE' && (
-                <div className="mb-2 w-fit rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-800">GRATUIT</div>
+                <div className="mb-2 w-fit rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-800">
+                  {t("subscription.free")}
+                </div>
               )}
               {plan.key === 'TWENTY_BOOKS' && (
-                <div className="mb-2 w-fit rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white">POPULAIRE</div>
+                <div className="mb-2 w-fit rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white">
+                  {t("subscription.twentyBooks")}
+                </div>
               )}
               {plan.key === 'UNLIMITED' && (
-                <div className="mb-2 w-fit rounded-full bg-red-800 px-2 py-1 text-xs font-bold text-white">ILIMITEE</div>
+                <div className="mb-2 w-fit rounded-full bg-red-800 px-2 py-1 text-xs font-bold text-white">
+                  {t("subscription.unlimited")}
+                </div>
               )}
             </li>
             <li className="flex items-center gap-2">
               <Check className="h-4 w-4 text-amber-600" />
-              Dashboard mpivarotra
+              {t("vendorDashboard.subscription")}
             </li>
           </ul>
           <div className="mt-6 space-y-2">
             {plan.key === "FREE" ? (
               <form action={activateFreeSubscriptionAction}>
                 <button type="submit" className="w-full rounded-lg border border-stone-200 py-2 text-sm text-stone-500 hover:bg-stone-50">
-
-                  Safidina 0 Ar
+                  {t("subscription.freeBtn")}
                 </button>
               </form>
             ) : (
@@ -66,7 +73,7 @@ export function SubscriptionPlans({ showFreePlan = true }: Props) {
                   type="submit"
                   className="w-full rounded-lg bg-amber-700 py-3 font-medium text-white hover:bg-amber-800"
                 >
-                  Safidina
+                  {t("subscription.subscribe")}
                 </button>
               </form>
               <form action={skipSubscriptionForDevAction.bind(null, plan.key)}>
@@ -74,7 +81,7 @@ export function SubscriptionPlans({ showFreePlan = true }: Props) {
                   type="submit"
                   className="w-full rounded-lg border border-stone-200 py-2 text-sm text-stone-500 hover:bg-stone-50"
                 >
-                  (Dev) Alefaso tsy mandoa
+                  (Dev) {t("subscription.payment")}
                 </button>
               </form>
               </>

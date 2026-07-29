@@ -2,20 +2,19 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe-server";
 import { prisma } from "@/lib/prisma";
-import { OrderType } from "@prisma/client";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
   const body = await req.text();
   const headerList = await headers();
-  const signature = headerList.get("stripe-signature") as string; // <- "stripe-signature" en minuscule
+  const signature = headerList.get("stripe-signature") as string;
   
   let event;
   try {
     event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    const errorMessage = err instanceof Error? err.message : "Unknown error";
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error("Webhook Error:", errorMessage); 
     return NextResponse.json({ error: `Webhook Error: ${errorMessage}` }, { status: 400 });
   }
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     
-    // Si c'est un livre, on met à jour la commande existante (créée avant le checkout)
+    // Si orderId est fourni, on met à jour la commande existante
     if (session.metadata?.orderId) {
       const { orderId } = session.metadata;
       const order = await prisma.order.findUnique({ where: { id: orderId } });
@@ -37,31 +36,10 @@ export async function POST(req: Request) {
             paymentStatus: "COMPLETED",
             deliveryStatus: "IN_TRANSIT",
             stripeSessionId: session.id,
+            mvolaStatus: "PAYE",
           },
         });
         console.log("Commande mise à jour par webhook (COMPLETED, IN_TRANSIT):", orderId);
-      }
-    } else if (session.metadata?.bookId) {
-      // Fallback: si orderId manquant, créer une commande (ancienne logique)
-      const { bookId, type, userId } = session.metadata;
-      const book = await prisma.book.findUnique({ where: { id: bookId } });
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (!book || !user) {
-        console.error("Livre ou utilisateur non trouvé:", { bookId, userId });
-      } else {
-        await prisma.order.create({
-          data: {
-            bookId,
-            userId,
-            type: type as OrderType,
-            amount: session.amount_total! / 100,
-            paymentMethod: "STRIPE",
-            paymentStatus: "COMPLETED",
-            deliveryStatus: "IN_TRANSIT",
-            stripeSessionId: session.id,
-          },
-        });
-        console.log("Commande livre créée (fallback):", bookId);
       }
     }
 
