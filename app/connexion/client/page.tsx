@@ -14,7 +14,15 @@ export default function ClientLoginPage() {
           <h1 className="text-2xl font-bold text-stone-900">Hiditra — Client</h1>
           <p className="mt-2 text-sm text-stone-500">{APP_NAME}</p>
 
-          <form action={loginAction} className="mt-8 space-y-4">
+          <form 
+            action={async (formData) => {
+              const result = await loginAction(formData);
+              if (result?.error) {
+                alert(result.error);
+              }
+            }} 
+            className="mt-8 space-y-4"
+          >
             <div>
               <label className="block text-sm font-medium text-stone-700">Email</label>
               <input

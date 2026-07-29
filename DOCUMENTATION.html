@@ -500,17 +500,17 @@ npm run build</pre>
 DATABASE_URL="file:./dev.db"
 
 # Stripe
-NEXT_PUBLIC_STRIPE_KEY="pk_test_..."
-STRIPE_SECRET_KEY="sk_test_..."
+NEXT_PUBLIC_STRIPE_KEY="your_stripe_public_key"
+STRIPE_SECRET_KEY="your_stripe_secret_key"
 
 # UploadThing
-UPLOADTHING_TOKEN="..."
+UPLOADTHING_TOKEN="your_uploadthing_token"
 
 # Mobile Money
 MOBILE_MONEY_PHONE="+261340000000"
 
 # JWT Secret (pour tokens)
-JWT_SECRET="your_secret_key_here"</pre>
+JWT_SECRET="your_jwt_secret"</pre>
             </div>
             
             <h3>Erreur 4 : "Unexpected token < in JSON at position 0"</h3>
@@ -565,7 +565,7 @@ JWT_SECRET="your_secret_key_here"</pre>
                 <ol style="margin: 10px 0 10px 30px;">
                     <li>Créez un compte sur uploadthing.com</li>
                     <li>Générez un nouveau token</li>
-                    <li>Ajoutez dans <code>.env.local</code> : <code>UPLOADTHING_TOKEN="sk_live_..."</code></li>
+                    <li>Ajoutez dans <code>.env.local</code> : <code>UPLOADTHING_TOKEN="your_uploadthing_token"</code></li>
                     <li>Redémarrez le serveur</li>
                 </ol>
             </div>
@@ -577,12 +577,12 @@ JWT_SECRET="your_secret_key_here"</pre>
             <div class="solution-box">
                 <strong>Solution :</strong> Assurez-vous que les variables exposées au frontend commencent par <code>NEXT_PUBLIC_</code>
                 <pre># ✅ Accessible au client
-NEXT_PUBLIC_STRIPE_KEY="pk_test_..."
+NEXT_PUBLIC_STRIPE_KEY="your_stripe_public_key"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 # ❌ Serveur seulement
-STRIPE_SECRET_KEY="sk_test_..."
-JWT_SECRET="..."</pre>
+STRIPE_SECRET_KEY="your_stripe_secret_key"
+JWT_SECRET="your_jwt_secret"</pre>
             </div>
             
             <h3>Erreur 9 : "Book not found" lors de la récupération</h3>
@@ -672,7 +672,7 @@ npx prisma db seed</pre>
                 <li>Créez un compte : uploadthing.com</li>
                 <li>Créez une nouvelle application</li>
                 <li>Générez un token API</li>
-                <li>Mettez dans <code>.env.local</code> : <code>UPLOADTHING_TOKEN="sk_live_..."`</li>
+                <li>Mettez dans <code>.env.local</code> : <code>UPLOADTHING_TOKEN="your_uploadthing_token"`</li>
             </ol>
             
             <h3>4. Build pour la Production</h3>

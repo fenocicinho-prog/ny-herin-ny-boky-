@@ -60,7 +60,7 @@ export default async function VendorDashboardPage() {
               <div key={book.id} className="bg-white border-gray-200 rounded-xl shadow-sm hover:shadow-md transition p-3 flex-col">
 
                 <img
-                  src={book.imageUrl}
+                  src={book.imageUrl || "/placeholder-book.png"}
                   alt={book.title}
                   className="w-full h-40 object-cover rounded-lg mb-3"
                 />

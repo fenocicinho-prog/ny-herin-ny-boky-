@@ -20,12 +20,7 @@ export function AddBookForm() {
     null
   );
 
-  useEffect(() => {
-    if(state?.redirect) {
-      router.push("/vendeur/dashboard");
-    }
-    
-  }, [state, router]);
+  // L'action redirige automatiquement vers le dashboard après succès
   return (
     <form action={formAction} className="space-y-4">
       <div>
@@ -135,7 +130,7 @@ export function AddBookForm() {
         </div>
       </div>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {/* Les erreurs sont gérées par les redirections ou les alertes globales */}
 
       <button
         type="submit"

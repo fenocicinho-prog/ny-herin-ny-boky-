@@ -41,7 +41,7 @@ export default async function Home() {
           <p className="empty">No users yet. Run <code>db:seed</code> after your first migration.</p>
         ) : (
           <ul className="users">
-            {users.map((user) => (
+            {users.map((user: any) => (
               <li key={user.id}>
                 <div>
                   <strong>{user.name ?? "Unnamed user"}</strong>

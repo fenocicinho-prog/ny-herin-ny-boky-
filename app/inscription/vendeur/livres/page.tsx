@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { AddBookForm } from "@/components/forms/AddBookForm";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, isSubscriptionValid } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export default async function VendorBooksPage({

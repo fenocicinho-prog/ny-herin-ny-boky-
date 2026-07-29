@@ -64,9 +64,7 @@
     "tsx": "^4.22.4",
     "typescript": "^5.9.3"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
+
   "allowScripts": {
     "@prisma/client@6.19.3": true,
     "@prisma/engines@6.19.3": true,

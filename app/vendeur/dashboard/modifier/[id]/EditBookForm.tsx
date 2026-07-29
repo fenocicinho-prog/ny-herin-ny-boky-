@@ -18,7 +18,7 @@ export default function EditBookForm({ book }: {book: any }) {
                 <div>
                 <label className="block mb-2 font-medium">Titre</label>
                 <input name="name" defaultValue={book.title} required className="border w-full p-2 rounded"/>
-                {state?.error && <p className='text-red-500'>state.error</p>}
+                {/* Les erreurs sont gérées par les redirections ou les alertes globales */}
                 </div>
 
                 <div>

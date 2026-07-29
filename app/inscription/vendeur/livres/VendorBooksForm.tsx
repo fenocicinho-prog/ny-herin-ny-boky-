@@ -27,13 +27,14 @@ export function VendorBooksForm({ vendorId }: VendorBooksFormProps) {
     if (imageUrl) formData.set("imageUrl", imageUrl);
 
     startTransition(async () => {
-      const result = await addBookAction(formData);
-      if (result?.error) {
-        setError(result.error);
-      } else {
+      try {
+        await addBookAction(formData);
+        // Note: Si addBookAction redirige, le code suivant ne sera pas exécuté
         setAddedBooks((prev) => [...prev, formData.get("name") as string]);
         form.reset();
         setImageUrl("");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Une erreur est survenue");
       }
     });
   }
