@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface OrderAlert {
   id: string;
@@ -8,10 +9,11 @@ interface OrderAlert {
     id: string;
     book: { id: string; title: string };
   }[];
-  book?: { id: string; title: string }; // fallback pour compatibilité
+  book?: { id: string; title: string };
 }
 
 export function DeliveryAlerts({ orders }: { orders: OrderAlert[] }) {
+  const { t } = useLanguage();
   const [pending, setPending] = useState<string | null>(null);
 
   async function confirm(orderId: string) {
@@ -34,7 +36,7 @@ export function DeliveryAlerts({ orders }: { orders: OrderAlert[] }) {
 
   return (
     <div className="rounded-lg bg-yellow-50 p-4 text-sm text-yellow-900">
-      <p className="font-medium">Vous avez des commandes en cours de livraison :</p>
+      <p className="font-medium">{t("clientDashboard.deliveryAlert")} :</p>
       <ul className="mt-2 space-y-2">
         {orders.map((o) => {
           const bookTitle = o.items?.[0]?.book?.title || o.book?.title || "Commande #" + o.id.slice(-6);
@@ -46,7 +48,7 @@ export function DeliveryAlerts({ orders }: { orders: OrderAlert[] }) {
                 disabled={pending === o.id}
                 className="rounded-md bg-amber-700 px-3 py-1 text-white"
               >
-                {pending === o.id ? "Envoi..." : "J'ai reçu"}
+                {pending === o.id ? t("clientDashboard.sending") : t("clientDashboard.received")}
               </button>
             </li>
           );

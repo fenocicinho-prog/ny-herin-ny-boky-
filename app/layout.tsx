@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
-//import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
-
-//const geistSans = Geist({
-// variable: "--font-geist-sans",
-//  subsets: ["latin"],
-//});
-
-//const geistMono = Geist_Mono({
-  // variable: "--font-geist-mono",
-  // subsets: ["latin"],
-// });
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Tsena boky Malagasy`,
@@ -29,13 +19,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="mg"
-      //className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="mg">
       <body className="min-h-full flex flex-col font-sans">
-        <LoadingScreen />
-        {children}
+        <LanguageProvider>
+          <LoadingScreen />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

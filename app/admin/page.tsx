@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import { useLanguage } from '@/lib/LanguageContext'
 
 type Order = {
   id: string
@@ -27,11 +28,11 @@ type Order = {
 }
 
 export default function AdminPage() {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ CORRECTION : Utiliser useCallback et dépendance vide pour éviter la boucle de refetch
   const fetchOrders = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/orders');
@@ -56,13 +57,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]); // ✅ Dépendance stable, pas de boucle
+  }, [fetchOrders]);
 
   const totalCommission = orders.reduce((sum, o) => sum + (o.platformFee || 0), 0);
   const totalAverser = orders.reduce((sum, o) => sum + (o.vendorPaymentAmount || 0), 0);
 
   const handleValidatePayment = async (orderId: string) => {
-    if (!confirm("Confirmez-vous avoir reçu l'argent ?")) return;
+    if (!confirm(t("admin.confirmReceived"))) return;
 
     setLoadingId(orderId);
     try {
@@ -74,7 +75,6 @@ export default function AdminPage() {
 
       if (res.ok) {
         const data = await res.json();
-        // Mettre à jour l'état local
         if (data.order) {
           setOrders(prevOrders =>
             prevOrders.map(o => 
@@ -84,17 +84,16 @@ export default function AdminPage() {
             )
           );
         } else {
-          // Fallback : retirer de la liste
           setOrders(prevOrders => prevOrders.filter(o => o.id !== orderId));
         }
-        alert("Paiement validé !");
+        alert(t("admin.paymentValidated"));
       } else {
         const errorData = await res.json().catch(() => ({}));
         alert(`Erreur: ${errorData.error || "Échec de la validation"}`);
       }
     } catch (e) {
       console.error(e);
-      alert("Erreur réseau.");
+      alert(t("admin.networkError"));
     } finally {
       setLoadingId(null);
     }
@@ -102,19 +101,19 @@ export default function AdminPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard Ny Herin&apos;ny Boky</h1>
+      <h1 className="text-3xl font-bold mb-6">{t("admin.title")}</h1>
       
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-blue-100 p-4 rounded">
-          <p className="text-sm">Ventes en attente</p>
+          <p className="text-sm">{t("admin.pendingSales")}</p>
           <p className="text-2xl font-bold">{orders.length}</p>
         </div>
         <div className="bg-green-100 p-4 rounded">
-          <p className="text-sm">Commission à garder</p>
+          <p className="text-sm">{t("admin.commission")}</p>
           <p className="text-2xl font-bold">{totalCommission.toLocaleString()} Ar</p>
         </div>
         <div className="bg-orange-100 p-4 rounded">
-          <p className="text-sm">À reverser aux vendeurs</p>
+          <p className="text-sm">{t("admin.toVendor")}</p>
           <p className="text-2xl font-bold">{totalAverser.toLocaleString()} Ar</p>
         </div>
       </div>
@@ -123,20 +122,20 @@ export default function AdminPage() {
         onClick={fetchOrders}
         className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
       >
-        {isLoading ? "Chargement..." : "Actualiser"}
+        {isLoading ? t("admin.loading") : t("admin.refresh")}
       </button>
 
       <div className="overflow-x-auto">
         <table className="w-full border text-sm">
           <thead>
             <tr className="bg-gray-100">
-              <th className="p-2 border">Date</th>
-              <th className="p-2 border">Ref Client TRX</th>
-              <th className="p-2 border">Détails Vendeurs & Livres</th>
-              <th className="p-2 border">Montant Total</th>
-              <th className="p-2 border">Commission</th>
-              <th className="p-2 border">Statut MVola</th>
-              <th className="p-2 border">Action</th>
+              <th className="p-2 border">{t("admin.date")}</th>
+              <th className="p-2 border">{t("admin.clientRef")}</th>
+              <th className="p-2 border">{t("admin.vendorDetails")}</th>
+              <th className="p-2 border">{t("admin.totalAmount")}</th>
+              <th className="p-2 border">{t("admin.commission_col")}</th>
+              <th className="p-2 border">{t("admin.mvolaStatus")}</th>
+              <th className="p-2 border">{t("admin.action")}</th>
             </tr>
           </thead>
           <tbody>
@@ -150,12 +149,12 @@ export default function AdminPage() {
                   <div key={item.id} className="mb-3 border-b pb-2 last:border-0 last:mb-0">
                     <p className="font-semibold text-gray-800">{item.book.title}</p>
                     <p className="text-xs text-gray-600">
-                      Vendeur: {item.seller.firstName} {item.seller.lastName}
+                      {t("admin.vendor")}: {item.seller.firstName} {item.seller.lastName}
                     </p>
                     <p className="text-xs font-bold text-green-700">
-                      MVola: {item.seller.mvolaNumber || "⚠️ Non renseigné"}
+                      {t("admin.mvolaNumber")}: {item.seller.mvolaNumber || t("admin.notSet")}
                     </p>
-                    <p className="text-xs mt-1">À payer: {(item.price * item.quantity).toLocaleString()} Ar</p>
+                    <p className="text-xs mt-1">{t("admin.toPay")}: {(item.price * item.quantity).toLocaleString()} Ar</p>
                   </div>
                 ))}
               </td>
@@ -187,8 +186,8 @@ export default function AdminPage() {
                   {loadingId === o.id 
                     ? "..." 
                     : o.mvolaStatus === "TERMINE" || o.mvolaStatus === "PAYE" 
-                      ? "✓ Validé" 
-                      : "Confirmer"}
+                      ? t("admin.validated") 
+                      : t("admin.confirm")}
                 </button>
               </td>
             </tr>
@@ -196,7 +195,7 @@ export default function AdminPage() {
           {orders.length === 0 && !isLoading && (
             <tr>
               <td colSpan={7} className="p-4 text-center text-gray-500">
-                Aucune commande en attente de vérification.
+                {t("admin.noOrders")}
               </td>
             </tr>
           )}

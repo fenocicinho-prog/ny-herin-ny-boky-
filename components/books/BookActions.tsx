@@ -3,6 +3,7 @@ import { useState } from "react";
 import { CreditCard, Smartphone } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orders";
 import { MOBILE_MONEY_PHONE } from "@/lib/constants";
+import { useLanguage } from "@/lib/LanguageContext";
 import type { BookWithVendor } from "./BookGrid";
 
 interface BookActionsProps {
@@ -10,6 +11,7 @@ interface BookActionsProps {
 }
 
 export function BookActions({ book }: BookActionsProps) {
+  const { t } = useLanguage();
   const [showModal, setShowModal] = useState(false);
   const [orderType, setOrderType] = useState<"BUY" | "BORROW">("BUY");
   const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "MOBILE_MONEY">(
@@ -67,7 +69,7 @@ export function BookActions({ book }: BookActionsProps) {
             onClick={() => openModal("BUY")}
             className="flex-1 rounded-lg bg-amber-700 px-3 py-2 text-sm font-medium text-white hover:bg-amber-800"
           >
-            Hividy
+            {t("bookCard.buy")}
           </button>
         )}
         {book.rentPrice != null && book.rentPrice > 0 && (
@@ -75,7 +77,7 @@ export function BookActions({ book }: BookActionsProps) {
             onClick={() => openModal("BORROW")}
             className="flex-1 rounded-lg border border-amber-300 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50"
           >
-            Hiray
+            {t("bookCard.borrow")}
           </button>
         )}
       </div>
@@ -84,13 +86,13 @@ export function BookActions({ book }: BookActionsProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-stone-900">
-              {orderType === "BUY" ? "Hividy" : "Hiray"} — {book.title}
+              {orderType === "BUY" ? t("payment.title") : t("payment.borrowTitle")} — {book.title}
             </h3>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <div>
                 <label className="text-sm font-medium text-stone-700">
-                  Fomba fandoavana
+                  {t("payment.mobileMoney")}
                 </label>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <button
@@ -103,7 +105,7 @@ export function BookActions({ book }: BookActionsProps) {
                     }`}
                   >
                     <Smartphone className="h-4 w-4" />
-                    Mobile Money
+                    {t("payment.mobileMoney")}
                   </button>
                   <button
                     type="button"
@@ -115,7 +117,7 @@ export function BookActions({ book }: BookActionsProps) {
                     }`}
                   >
                     <CreditCard className="h-4 w-4" />
-                    Stripe
+                    {t("payment.online")}
                   </button>
                 </div>
               </div>
@@ -123,12 +125,11 @@ export function BookActions({ book }: BookActionsProps) {
               {paymentMethod === "MOBILE_MONEY" && (
                 <>
                   <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-                    Alefaso ny vola amin&apos;ny:{" "}
-                    <strong>{MOBILE_MONEY_PHONE}</strong>
+                    {t("order.sendTo")}: <strong>{MOBILE_MONEY_PHONE}</strong>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-stone-700">
-                      Ny laharan-telefaoninao
+                      {t("order.phone")}
                     </label>
                     <input
                       type="tel"
@@ -152,14 +153,14 @@ export function BookActions({ book }: BookActionsProps) {
                   onClick={() => setShowModal(false)}
                   className="flex-1 rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50"
                 >
-                  Ajanona
+                  {t("payment.cancelled")}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800 disabled:opacity-50"
                 >
-                  {loading ? "Miandry..." : "Manohy"}
+                  {loading ? t("payment.loading") : t("payment.confirm")}
                 </button>
               </div>
             </form>

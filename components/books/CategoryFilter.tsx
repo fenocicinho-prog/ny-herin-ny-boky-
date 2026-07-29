@@ -1,6 +1,9 @@
+"use client";
+
 import type { BookCategory } from "@prisma/client";
 import Link from "next/link";
 import { CATEGORY_LABELS, CATEGORY_LIST } from "@/lib/constants";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface CategoryFilterProps {
   activeCategory?: string;
@@ -13,6 +16,8 @@ export function CategoryFilter({
   basePath = "",
   searchQuery = "",
 }: CategoryFilterProps) {
+  const { t } = useLanguage();
+
   const buildHref = (category: string) => {
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
@@ -22,7 +27,7 @@ export function CategoryFilter({
   };
 
   const categories: { value: string; label: string }[] = [
-    { value: "ALL", label: "Rehetra" },
+    { value: "ALL", label: t("search.all") },
     ...CATEGORY_LIST.map((c: BookCategory) => ({
       value: c,
       label: CATEGORY_LABELS[c],

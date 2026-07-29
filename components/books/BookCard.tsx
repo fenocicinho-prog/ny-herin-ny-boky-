@@ -5,6 +5,7 @@ import { CATEGORY_LABELS } from "@/lib/constants";
 import { BookOpen, Store } from "lucide-react";
 import { PaymentModal } from "./PaymentModal";
 import { useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface BookCardProps {
   book: {
@@ -22,6 +23,7 @@ interface BookCardProps {
 }
 
 export function BookCard({ book, showActions = false }: BookCardProps) {
+  const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
   const [orderType, setOrderType] = useState<"BUY" | "BORROW">("BUY");
 
@@ -74,7 +76,7 @@ export function BookCard({ book, showActions = false }: BookCardProps) {
                 {book.buyPrice.toLocaleString("fr-FR")} Ar
               </span>
               <span className="text-stone-500">
-                Fanofana: {book.rentPrice.toLocaleString("fr-FR")} Ar
+                {t("bookCard.rentPrice")} {book.rentPrice.toLocaleString("fr-FR")} Ar
               </span>
             </div>
 
@@ -84,13 +86,13 @@ export function BookCard({ book, showActions = false }: BookCardProps) {
                   onClick={() => openModal("BUY")}
                   className="flex-1 rounded-lg bg-amber-700 px-3 py-2 text-xs font-medium text-white hover:bg-amber-800 transition-colors"
                 >
-                  Hividy
+                  {t("bookCard.buy")}
                 </button>
                 <button
                   onClick={() => openModal("BORROW")}
                   className="flex-1 rounded-lg border border-amber-700 px-3 py-2 text-xs font-medium text-amber-800 hover:bg-amber-50 transition-colors"
                 >
-                  Hanofa
+                  {t("bookCard.borrow")}
                 </button>
               </div>
             )}

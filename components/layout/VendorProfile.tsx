@@ -1,5 +1,8 @@
+"use client";
+
 import type { SessionUser } from "@/lib/auth";
 import { MapPin, Mail, Package, BookMarked } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface VendorProfileProps {
   user: SessionUser;
@@ -7,6 +10,8 @@ interface VendorProfileProps {
 }
 
 export function VendorProfile({ user, stats }: VendorProfileProps) {
+  const { t } = useLanguage();
+
   return (
     <aside className="w-full shrink-0 lg:w-64">
       <div className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
@@ -16,20 +21,20 @@ export function VendorProfile({ user, stats }: VendorProfileProps) {
         <h2 className="text-lg font-semibold text-stone-900">
           {user.companyName}
         </h2>
-        <p className="text-sm text-stone-500">Mpivarotra</p>
+        <p className="text-sm text-stone-500">{t("vendorProfile.company")}</p>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-amber-50 p-3 text-center">
             <Package className="mx-auto h-5 w-5 text-amber-600" />
             <p className="mt-1 text-xl font-bold text-amber-900">{stats.sold}</p>
-            <p className="text-xs text-stone-500">Lafo</p>
+            <p className="text-xs text-stone-500">{t("vendorDashboard.sold")}</p>
           </div>
           <div className="rounded-xl bg-stone-50 p-3 text-center">
             <BookMarked className="mx-auto h-5 w-5 text-stone-600" />
             <p className="mt-1 text-xl font-bold text-stone-900">
               {stats.borrowed}
             </p>
-            <p className="text-xs text-stone-500">Hiray</p>
+            <p className="text-xs text-stone-500">{t("vendorDashboard.borrowed")}</p>
           </div>
         </div>
 

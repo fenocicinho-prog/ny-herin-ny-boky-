@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface SearchBarProps {
   defaultValue?: string;
@@ -11,11 +12,13 @@ interface SearchBarProps {
 
 export function SearchBar({
   defaultValue = "",
-  placeholder = "Mitady boky...",
+  placeholder: defaultPlaceholder = "",
 }: SearchBarProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(defaultValue);
+  const placeholder = defaultPlaceholder || t("search.placeholder");
 
   const handleSearch = useCallback(
     (e: React.FormEvent) => {

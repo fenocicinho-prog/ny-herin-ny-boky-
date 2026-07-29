@@ -1,4 +1,7 @@
+"use client";
+
 import { Store, MapPin, TrendingUp, BookMarked } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface VendorSidebarProps {
   companyName?: string | null;
@@ -17,6 +20,8 @@ export function VendorSidebar({
   borrowed,
   bookCount,
 }: VendorSidebarProps) {
+  const { t } = useLanguage();
+
   return (
     <aside className="flex flex-col gap-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
       <div className="flex items-center gap-3">
@@ -41,19 +46,19 @@ export function VendorSidebar({
           <TrendingUp className="h-5 w-5 text-emerald-600" />
           <div>
             <p className="text-2xl font-bold text-emerald-800">{sold}</p>
-            <p className="text-xs text-emerald-600">Boky nividianina</p>
+            <p className="text-xs text-emerald-600">{t("vendorDashboard.sold")}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 rounded-lg bg-blue-50 p-3">
           <BookMarked className="h-5 w-5 text-blue-600" />
           <div>
             <p className="text-2xl font-bold text-blue-800">{borrowed}</p>
-            <p className="text-xs text-blue-600">Boky nofafana</p>
+            <p className="text-xs text-blue-600">{t("vendorDashboard.borrowed")}</p>
           </div>
         </div>
         <div className="rounded-lg bg-stone-50 p-3 text-center">
           <p className="text-lg font-semibold text-stone-800">{bookCount}</p>
-          <p className="text-xs text-stone-500">Boky ao amin&apos;ny catalogue</p>
+          <p className="text-xs text-stone-500">{t("vendorProfile.books")}</p>
         </div>
       </div>
     </aside>
