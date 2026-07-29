@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpen, LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
+import Image from "next/image";
 import { SITE_NAME } from "@/lib/constants";
 import { logoutAction } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/auth";
@@ -13,8 +14,17 @@ export function Header({ user }: HeaderProps) {
     <header className="sticky top-0 z-50 border-b border-amber-100 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="h-8 w-8 text-amber-700" />
-          <span className="text-xl font-bold text-amber-900">{SITE_NAME}</span>
+          <div className="relative h-10 w-10 overflow-hidden rounded-lg">
+            <Image
+              src="/logo-ny-herin-ny-boky.png"
+              alt={SITE_NAME}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <span className="hidden text-xl font-bold text-amber-900 sm:inline-block">
+            {SITE_NAME}
+          </span>
         </Link>
 
         <nav className="flex items-center gap-3">

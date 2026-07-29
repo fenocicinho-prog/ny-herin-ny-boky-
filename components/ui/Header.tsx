@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { APP_NAME } from "@/lib/constants";
-import { BookOpen } from "lucide-react";
+import Image from "next/image";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="h-7 w-7 text-amber-700" />
-          <span className="text-xl font-bold text-amber-900">{APP_NAME}</span>
+          <div className="relative h-10 w-10 overflow-hidden rounded-lg">
+            <Image
+              src="/logo-ny-herin-ny-boky.png"
+              alt={APP_NAME}
+              fill
+              className="object-cover"
+            />
+          </div>
+          <span className="hidden text-xl font-bold text-amber-900 sm:inline-block">
+            {APP_NAME}
+          </span>
         </Link>
         <div className="flex items-center gap-3">
           <Link
