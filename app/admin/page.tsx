@@ -1,7 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
-// 1. CORRECTION DU TYPE : seller pointe directement vers User
 type Order = {
   id: string
   clientTrxRef: string
@@ -20,7 +19,6 @@ type Order = {
       title: string
     }
     seller: { 
-      // Pas de .user ici, car seller EST déjà l'objet User dans votre schéma
       firstName: string | null
       lastName: string | null
       mvolaNumber: string | null
@@ -29,83 +27,86 @@ type Order = {
 }
 
 export default function AdminPage() {
-  const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-const [orders, setOrders] = useState<Order[]>([]); 
-
-useEffect(() => {
-  if (orders.length > 0) {
-    console.log("Structure d'une commande :", orders[0]);
-    // Développez l'objet dans la console pour voir si seller.mvolaNumber existe
-  }
-fetch('/api/admin/orders')
-    .then(r => {
-      if (r.status === 403) {
-        console.error("Accès refusé : Vous n'êtes pas admin ou pas connecté")
-        throw new Error("403")
+  // ✅ CORRECTION : Utiliser useCallback et dépendance vide pour éviter la boucle de refetch
+  const fetchOrders = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/orders');
+      if (res.status === 403) {
+        console.error("Accès refusé : Vous n'êtes pas admin ou pas connecté");
+        return;
       }
-      return r.json()
-    })
-    .then((data) => {
-      // 2. S'assurer que data est bien un tableau avant de setter
+      const data = await res.json();
       if (Array.isArray(data)) {
         setOrders(data);
       } else {
         console.error("L'API n'a pas renvoyé un tableau:", data);
-        setOrders([]); // Fallback sécurisé
+        setOrders([]);
       }
-    })
-    .catch(() => setOrders([]));
-}, [orders]);
-
-// 3. Sécuriser le calcul (au cas où orders serait encore indéfini au premier rendu)
-const totalCommission = Array.isArray(orders) 
-  ? orders.reduce((sum, o) => sum + (o.platformFee || 0), 0) 
-  : 0;
-
-const totalAverser = Array.isArray(orders) 
-  ? orders.reduce((sum, o) => sum + (o.vendorPaymentAmount || 0), 0) 
-  : 0;   
-  // Fonction pour valider le paiement
-// Dans app/admin/page.tsx
-
-const handleValidatePayment = async (orderId: string) => {
-  if (!confirm("Confirmez-vous avoir reçu l'argent ?")) return;
-
-  setLoadingId(orderId);
-  try {
-    const res = await fetch('/api/admin/validate-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId }),
-    });
-
-    if (res.ok) {
-      // ✅ CORRECTION : Mettre à jour l'état local instantanément
-      setOrders(prevOrders => 
-        prevOrders.filter(o => o.id !== orderId) // Option A : Retirer la commande de la liste (recommandé)
-        // OU Option B : Mettre à jour le statut seulement
-        // prevOrders.map(o => o.id === orderId ? { ...o, mvolaStatus: 'TERMINE', paymentStatus: 'COMPLETED' } : o)
-      );
-      
-      alert("Paiement validé !");
-    } else {
-      alert("Erreur lors de la validation.");
+    } catch (err) {
+      console.error("Erreur lors du chargement:", err);
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (e) {
-    console.error(e);
-    alert("Erreur réseau.");
-  } finally {
-    setLoadingId(null);
-  }
-};   
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]); // ✅ Dépendance stable, pas de boucle
+
+  const totalCommission = orders.reduce((sum, o) => sum + (o.platformFee || 0), 0);
+  const totalAverser = orders.reduce((sum, o) => sum + (o.vendorPaymentAmount || 0), 0);
+
+  const handleValidatePayment = async (orderId: string) => {
+    if (!confirm("Confirmez-vous avoir reçu l'argent ?")) return;
+
+    setLoadingId(orderId);
+    try {
+      const res = await fetch('/api/admin/validate-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Mettre à jour l'état local
+        if (data.order) {
+          setOrders(prevOrders =>
+            prevOrders.map(o => 
+              o.id === orderId 
+                ? { ...o, mvolaStatus: 'TERMINE', paymentStatus: 'COMPLETED' }
+                : o
+            )
+          );
+        } else {
+          // Fallback : retirer de la liste
+          setOrders(prevOrders => prevOrders.filter(o => o.id !== orderId));
+        }
+        alert("Paiement validé !");
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert(`Erreur: ${errorData.error || "Échec de la validation"}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erreur réseau.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard Ny Herin'ny Boky</h1>
+      <h1 className="text-3xl font-bold mb-6">Dashboard Ny Herin&apos;ny Boky</h1>
       
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-blue-100 p-4 rounded">
-          <p className="text-sm">Ventes Totales</p>
+          <p className="text-sm">Ventes en attente</p>
           <p className="text-2xl font-bold">{orders.length}</p>
         </div>
         <div className="bg-green-100 p-4 rounded">
@@ -117,6 +118,13 @@ const handleValidatePayment = async (orderId: string) => {
           <p className="text-2xl font-bold">{totalAverser.toLocaleString()} Ar</p>
         </div>
       </div>
+
+      <button 
+        onClick={fetchOrders}
+        className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+      >
+        {isLoading ? "Chargement..." : "Actualiser"}
+      </button>
 
       <div className="overflow-x-auto">
         <table className="w-full border text-sm">
@@ -167,14 +175,13 @@ const handleValidatePayment = async (orderId: string) => {
               <td className="p-2 border">
                 <button 
                   onClick={() => handleValidatePayment(o.id)}
-                  // Le bouton est désactivé si on est en train de charger OU si c'est déjà validé
                   disabled={loadingId === o.id || o.mvolaStatus === "TERMINE" || o.mvolaStatus === "PAYE"}
                   className={`px-4 py-2 rounded text-white text-xs font-bold transition-colors shadow-sm ${
                     loadingId === o.id 
                       ? "bg-gray-400 cursor-wait" 
                       : o.mvolaStatus === "TERMINE" || o.mvolaStatus === "PAYE"
-                        ? "bg-green-600 cursor-default opacity-75" // Vert clair pour montrer que c'est fini
-                        : "bg-blue-600 hover:bg-blue-700 hover:shadow" // Bleu vif pour l'action
+                        ? "bg-green-600 cursor-default opacity-75"
+                        : "bg-blue-600 hover:bg-blue-700 hover:shadow"
                   }`}
                 >
                   {loadingId === o.id 
@@ -186,9 +193,16 @@ const handleValidatePayment = async (orderId: string) => {
               </td>
             </tr>
           ))}
+          {orders.length === 0 && !isLoading && (
+            <tr>
+              <td colSpan={7} className="p-4 text-center text-gray-500">
+                Aucune commande en attente de vérification.
+              </td>
+            </tr>
+          )}
         </tbody>
         </table>
       </div>
     </div>
   )
-}   
+}

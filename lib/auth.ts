@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
-import type { Role } from "@prisma/client";
 
 const SESSION_COOKIE = "marketbook_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
@@ -46,9 +45,11 @@ export async function getSessionUser() {
       firstName: true,
       lastName: true,
       role: true,
+      isAdmin: true,
       companyName: true,
       location: true,
       postalCode: true,
+      mvolaNumber: true,
       subscriptionPlan: true,
       subscriptionActive: true,
       subscriptionEndsAt: true,
@@ -84,7 +85,7 @@ export function getSubscriptionDaysRemaining(user: { subscriptionEndsAt: Date | 
   return diff <= 0 ? 0 : Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-export async function requireAuth(role?: Role) {
+export async function requireAuth(role?: string) {
   const user = await getSessionUser();
   if (!user) {
     throw new Error("Non authentifié");

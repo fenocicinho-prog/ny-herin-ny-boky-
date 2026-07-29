@@ -6,7 +6,14 @@ import { redirect } from "next/navigation";
 export default async function LoginPage() {
   const user = await getSessionUser();
   if (user) {
-    redirect(user.role === "VENDOR" ? "/vendeur" : "/client");
+    // ✅ CORRECTION : Gérer les 3 rôles possibles (ADMIN, VENDOR, CLIENT)
+    if (user.role === "ADMIN") {
+      redirect("/admin");
+    } else if (user.role === "VENDOR") {
+      redirect("/vendeur");
+    } else {
+      redirect("/client");
+    }
   }
 
   return (

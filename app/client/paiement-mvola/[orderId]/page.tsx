@@ -3,7 +3,6 @@ import { requireAuth } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { SubmitMvolaProofForm } from "@/components/forms/submit-form";
 
-// 1. CORRECTION : Le type doit utiliser 'orderId' car le dossier s'appelle [orderId]
 interface PageProps {
   params: Promise<{ orderId: string }>;
 }
@@ -11,10 +10,9 @@ interface PageProps {
 export default async function MvolaPaymentPage({ params }: PageProps) {
   const user = await requireAuth("CLIENT");
   
-  // 2. CORRECTION : Déstructurer 'orderId' au lieu de 'id'
   const { orderId } = await params;
 
-  // 3. CORRECTION : Utiliser 'orderId' dans la requête Prisma
+  // ✅ CORRECTION : Utiliser la relation 'items' au lieu de 'book' directement
   const order = await prisma.order.findUnique({
     where: { id: orderId }, 
     include: { 
@@ -32,8 +30,10 @@ export default async function MvolaPaymentPage({ params }: PageProps) {
     redirect("/client?success=true");
   }
 
-  const bookTitle = order.items[0]?.book.title || "Votre commande";
+  // ✅ CORRECTION : Récupérer le titre du livre via la relation items
+  const bookTitle = order.items[0]?.book?.title || "Votre commande";
   const amount = order.amount;
+  const sellerMvolaNumber = order.items[0]?.seller?.mvolaNumber || process.env.NEXT_PUBLIC_MVOLA_NUMBER || "038 40 636 53";
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-6">
@@ -43,7 +43,7 @@ export default async function MvolaPaymentPage({ params }: PageProps) {
         <p className="font-semibold">Résumé de la commande :</p>
         <p>Livre : {bookTitle}</p>
         <p>Montant à payer : <strong>{amount} Ar</strong></p>
-        <p>Numéro destinataire : <strong>{process.env.NEXT_PUBLIC_MVOLA_NUMBER || "038 40 636 53"}</strong></p>
+        <p>Numéro destinataire : <strong>{sellerMvolaNumber}</strong></p>
       </div>
 
       <div className="space-y-2">
@@ -61,4 +61,4 @@ export default async function MvolaPaymentPage({ params }: PageProps) {
       <SubmitMvolaProofForm orderId={order.id} />
     </div>
   );
-}   
+}

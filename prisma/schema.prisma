@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  CLIENT
-  VENDOR
-}
-
 enum BookCategory {
   SCIENCE
   MALAGASY
@@ -28,6 +23,8 @@ enum OrderType {
 enum PaymentMethod {
   STRIPE
   MOBILE_MONEY
+  MVOLA
+  ON_SITE
 }
 
 enum PaymentStatus {
@@ -55,22 +52,29 @@ model User {
   password             String
   firstName            String?
   lastName             String?
-  role                 String            @default("BUYER")
+  phoneNumber          String?
+  role                 String            @default("CLIENT")
+  isAdmin              Boolean           @default(false)
   companyName          String?
   location             String?
   postalCode           String?
   reasonForJoining     String?
   bookTypesSought      String?
+  sellerPlanType       String?           @default("COMMISSION")
   subscriptionPlan     SubscriptionPlan  @default(FREE)
   subscriptionActive   Boolean           @default(false)
   subscriptionEndsAt   DateTime?
   stripeSessionId      String?           @unique
   stripeCustomerId     String?           @unique
-  stripeSubscriptionId String?           @unique  
+  stripeSubscriptionId String?           @unique
+  mvolaNumber          String?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
+
   books                Book[]
-  orders               Order[]
+  orders               Order[]           @relation("UserOrders")
+  soldOrders           OrderItem[]
+  sellerProfile        Seller?
 }
 
 model Book {
@@ -84,25 +88,55 @@ model Book {
   category    BookCategory
   vendorId    String
   vendor      User         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  orders      Order[]
+  items       OrderItem[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
 
 model Order {
-  id              String          @id @default(cuid())
-  type            OrderType
-  paymentMethod   PaymentMethod
-  paymentStatus   PaymentStatus   @default(PENDING)
-  deliveryStatus  DeliveryStatus  @default(PENDING)
-  paidToVendor    Boolean         @default(false)
-  amount          Float
-  phoneNumber     String?
-  stripeSessionId String?
-  bookId          String
-  book            Book            @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  userId          String
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id                  String          @id @default(cuid())
+  type                String          // "BUY" ou "BORROW" ou "BOOK"
+  paymentMethod       String          // "STRIPE", "MOBILE_MONEY", "MVOLA"
+  paymentStatus       String          @default("PENDING")
+  deliveryStatus      String          @default("PENDING")
+  paidToVendor        Boolean         @default(false)
+  amount              Float
+  phoneNumber         String?
+  stripeSessionId     String?
+  mvolaFee            Float?
+  mvolaStatus         String          @default("EN_ATTENTE_CLIENT")
+  clientTrxRef        String          @unique
+  adminTrxRef         String?
+  platformFee         Float           @default(0)
+  vendorPaymentAmount Float           @default(0)
+  userId              String
+  user                User            @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
+  items               OrderItem[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  bookId    String
+  sellerId  String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  seller    User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+}
+
+model Seller {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plantype  String   @default("COMMISSION")
+  isActive  Boolean  @default(false)
+  mvolaNumber String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

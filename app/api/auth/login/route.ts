@@ -4,24 +4,28 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
-// ✅ Utiliser exactement le même nom que dans lib/auth.ts
 const SESSION_COOKIE = "marketbook_session"; 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
+
+    // Validation basique de l'input
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+      return NextResponse.json({ error: "Identifiants invalides" }, { status: 401 });
+    }
+
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) return NextResponse.json({ error: "Identifiants invalides" }, { status: 401 });
 
-    const isValid = user.password.startsWith('$2a') 
-      ? await bcrypt.compare(password, user.password)
-      : password === user.password;
+    // ✅ CORRECTION : Toujours utiliser bcrypt.compare, jamais de comparaison en clair
+    const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) return NextResponse.json({ error: "Identifiants invalides" }, { status: 401 });
 
-    // ✅ Stocker uniquement l'ID (string) avec le bon nom de cookie
+    // Stocker uniquement l'ID (string) avec le bon nom de cookie
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE, user.id, {
       httpOnly: true,
@@ -36,4 +40,4 @@ export async function POST(req: Request) {
     console.error("Erreur Login:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
-}   
+}

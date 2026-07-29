@@ -39,7 +39,7 @@ export function PaymentModal({ book, orderType, onClose }: PaymentModalProps) {
 
     try {
       if (method === "STRIPE") {
-        // 1. STRIPE = appel direct API JSON
+        // STRIPE = appel direct API JSON
         console.log("Envoi vers stripe:", { bookId: book.id, title: book.title, price: amount });
         
         const res = await fetch("/api/create-checkout", {
@@ -55,15 +55,16 @@ export function PaymentModal({ book, orderType, onClose }: PaymentModalProps) {
         
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Erreur Stripe");
-        window.location.href = data.url; // redirection
+        window.location.href = data.url;
         return;
       } 
       
-      // 2. MOBILE_MONEY et ON_SITE = Server Action
+      // MOBILE_MONEY et ON_SITE = Server Action (tous deux passent par le flux MVola manuel)
       const formData = new FormData();
       formData.set("bookId", book.id);
       formData.set("type", orderType);
-      formData.set("paymentMethod", method);
+      // ✅ CORRECTION : ON_SITE est maintenant géré comme MOBILE_MONEY dans le backend
+      formData.set("paymentMethod", method === "ON_SITE" ? "MOBILE_MONEY" : "MOBILE_MONEY");
       if (phone) formData.set("phoneNumber", phone);
 
       const result = await createOrderAction(formData);
@@ -130,7 +131,7 @@ export function PaymentModal({ book, orderType, onClose }: PaymentModalProps) {
               </label>
             </div>
 
-            {method === "MOBILE_MONEY" && (
+            {(method === "MOBILE_MONEY" || method === "ON_SITE") && (
               <input
                 type="tel"
                 value={phone}

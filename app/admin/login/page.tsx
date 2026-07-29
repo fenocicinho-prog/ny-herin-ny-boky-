@@ -3,25 +3,21 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-// Importez votre fonction de login existante
-// import { login } from "@/lib/auth-actions"; 
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      // 1. Tentez de connecter l'utilisateur avec votre fonction existante
-      // const result = await login(email, password); 
-      
-      // SIMULATION (À remplacer par votre vrai appel de login)
-      const res = await fetch('/api/auth/login', { // Adaptez selon votre endpoint
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -31,17 +27,20 @@ export default function AdminLoginPage() {
       
       const user = await res.json();
 
-      // 2. VÉRIFICATION CRITIQUE DU RÔLE
+      // Vérification critique du rôle
       if (user.role !== 'ADMIN') {
         setError('Accès refusé : Vous n\'êtes pas administrateur.');
+        setIsLoading(false);
         return;
       }
 
-      // 3. Redirection vers le dashboard si tout est bon
+      // Redirection vers le dashboard admin
       router.push('/admin');
       
     } catch (err) {
-      setError('Erreur de connexion.');
+      setError('Erreur de connexion. Vérifiez vos identifiants.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,10 +77,14 @@ export default function AdminLoginPage() {
           />
         </div>
 
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-          Se connecter
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Connexion...' : 'Se connecter'}
         </button>
       </form>
     </div>
   );
-}   
+}

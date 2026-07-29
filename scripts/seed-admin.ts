@@ -5,15 +5,19 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  const hashedPassword = await bcrypt.hash('1610422010', 10);
+  const hashedPassword = await bcrypt.hash('1610422010', 12); // ✅ Augmenter le cost à 12 pour plus de sécurité
 
   await prisma.user.upsert({
     where: { email: 'admin@marketbook.com' },
-    update: {},
+    update: {
+      password: hashedPassword,
+      role: 'ADMIN',
+    },
     create: {
       email: 'admin@marketbook.com',
-      password: hashedPassword, // Le hash est généré ici une seule fois lors du seed
+      password: hashedPassword,
       role: 'ADMIN',
+      isAdmin: true,
       firstName: 'Super',
       lastName: 'Admin',
     },
@@ -23,4 +27,4 @@ async function main() {
 
 main()
   .catch((e) => console.error(e))
-  .finally(async () => await prisma.$disconnect());   
+  .finally(async () => await prisma.$disconnect());

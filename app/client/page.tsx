@@ -23,7 +23,7 @@ export default async function ClientDashboard({
   const where: Record<string, unknown> = {};
   if (query) {
     where.OR = [
-      { name: { contains: query } },
+      { title: { contains: query } }, // ✅ CORRECTION : 'name' -> 'title' (champ correct dans le schéma)
       { description: { contains: query } },
     ];
   }
@@ -35,15 +35,22 @@ export default async function ClientDashboard({
     where,
     include: {
       vendor: { select: { companyName: true, location: true } },
-      orders: { where: { paymentStatus: "COMPLETED" }, select: { id: true, deliveryStatus: true } },
+      items: { 
+        where: { order: { paymentStatus: "COMPLETED" } },
+        select: { id: true } 
+      },
     },
     orderBy: { createdAt: "desc" },
   });
 
   // Récupérer commandes en transit pour l'alerte
   const ordersInTransit = await prisma.order.findMany({
-    where: { userId: user.id, paymentStatus: "COMPLETED", deliveryStatus: "IN_TRANSIT" },
-    include: { book: { select: { id: true, title: true } } },
+    where: { userId: user.id, paymentStatus: "COMPLETED", type: "IN_TRANSIT" },
+    include: { 
+      items: { 
+        include: { book: { select: { id: true, title: true } } } 
+      } 
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -61,7 +68,7 @@ export default async function ClientDashboard({
           )}
           {params.payment === "confirmed" && (
             <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">
-              Mobile Money voafidy! Ny kaomandinao efa voarakitra.
+              Ny reference-nao dia mandeha amin&apos;ny fanamarinana.
             </div>
           )}
 

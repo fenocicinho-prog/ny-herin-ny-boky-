@@ -8,14 +8,20 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getStripe, MOBILE_MONEY_PHONE } from "@/lib/stripe-server";
 
-//export const revalidate = 0;
-
+// ✅ CORRECTION : Ajouter ON_SITE au schéma de validation pour le PaymentModal
 const orderSchema = z.object({
   bookId: z.string(),
   type: z.enum(["BUY", "BORROW"]),
-  paymentMethod: z.enum(["STRIPE", "MOBILE_MONEY"]),
+  paymentMethod: z.enum(["STRIPE", "MOBILE_MONEY", "ON_SITE"]),
   phoneNumber: z.string().optional(),
 });
+
+// ✅ Harmonisation : Utiliser la même fonction de commission partout
+function calculerCommission(prix: number): number {
+  if (prix <= 50000) return Math.round(prix * 0.08)
+  if (prix <= 90000) return Math.round(prix * 0.07)
+  return Math.round(prix * 0.05)
+}
 
 export async function createOrderAction(formData: FormData) {
   const user = await requireAuth("CLIENT");
@@ -46,14 +52,17 @@ export async function createOrderAction(formData: FormData) {
     return { error: "Prix non disponible pour cette option" };
   }
 
-  // 2. Calcul sécurisé des frais et gains (basé sur le montant réel)
-  const platformFee = amount * 0.10; // 10%
-  const vendorPaymentAmount = amount * 0.90; // 90%
+  // ✅ CORRECTION : Utiliser la même fonction de commission (harmonisation)
+  const platformFee = calculerCommission(amount);
+  const vendorPaymentAmount = amount - platformFee;
 
-  if (parsed.data.paymentMethod === "MOBILE_MONEY") {
+  // ✅ CORRECTION : Gérer ON_SITE comme un flux MVola manuel (en attente de vérification admin)
+  if (parsed.data.paymentMethod === "MOBILE_MONEY" || parsed.data.paymentMethod === "ON_SITE") {
     if (!parsed.data.phoneNumber) {
       return { error: "Numéro de téléphone requis pour Mobile Money" };
     }
+
+    const clientTrxRef = `TRX-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
     const order = await prisma.order.create({
       data: {
@@ -66,7 +75,7 @@ export async function createOrderAction(formData: FormData) {
         userId: user.id,
         paidToVendor: false,
         mvolaStatus: "EN_ATTENTE_CLIENT",
-        clientTrxRef: `TRX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        clientTrxRef,
         platformFee,
         vendorPaymentAmount,
         items: {
@@ -83,7 +92,7 @@ export async function createOrderAction(formData: FormData) {
         items: { 
           include: { 
             book: true, 
-            seller: true // 'seller' est déjà l'objet User complet
+            seller: true
           } 
         }
       }
@@ -92,11 +101,10 @@ export async function createOrderAction(formData: FormData) {
     const item = order.items[0];
     
     // 3. Envoi de l'email (Protégé contre les erreurs)
-    // On vérifie que item et seller existent avant d'envoyer
     if (item && item.seller && item.seller.email) {
       try {
         await sendSaleEmail({
-          vendorEmail: item.seller.email, // ✅ Correction: accès direct à .email
+          vendorEmail: item.seller.email,
           bookTitle: item.book.title,
           buyerName: order.user.firstName || order.user.email,
           price: order.amount,
@@ -105,7 +113,6 @@ export async function createOrderAction(formData: FormData) {
         });
       } catch (emailError) {
         console.error("Échec envoi email:", emailError);
-        // On ne bloque pas la commande si l'email échoue
       }
     }
 
@@ -119,9 +126,9 @@ export async function createOrderAction(formData: FormData) {
       line_items: [
         {
           price_data: {
-            currency: "eur", // Ou "mga" si configuré
+            currency: "eur",
             product_data: { name: book.title },
-            unit_amount: Math.round(amount), // Stripe attend un entier
+            unit_amount: Math.round(amount * 100), // ✅ CORRECTION : Stripe attend des centimes
           },
           quantity: 1,
         },
@@ -136,6 +143,8 @@ export async function createOrderAction(formData: FormData) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/client?cancelled=true`,
     });
 
+    const clientTrxRef = `STR-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+
     await prisma.order.create({
       data: {
         type: parsed.data.type,
@@ -145,7 +154,7 @@ export async function createOrderAction(formData: FormData) {
         amount,
         stripeSessionId: session.id,
         userId: user.id,
-        clientTrxRef: `STR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        clientTrxRef,
         mvolaStatus: "EN_ATTENTE_CLIENT",
         paidToVendor: false,
         platformFee,
@@ -173,7 +182,13 @@ export async function createOrderAction(formData: FormData) {
   }
 }   
 
-export async function confirmMobilePaymentAction(orderId: string) {
+// ✅ CORRECTION CRITIQUE : Supprimer la fonction qui permettait au client de marquer
+// lui-même sa commande comme payée. Le client doit maintenant passer par le flux
+// de soumission de preuve MVola (submitMvolaProof) qui envoie la commande
+// en "EN_ATTENTE_VERIFICATION" pour que l'admin la valide.
+
+// Remplacée par une fonction qui redirige uniquement vers la page de soumission de preuve
+export async function goToMvolaProof(orderId: string) {
   const user = await requireAuth("CLIENT");
 
   const order = await prisma.order.findFirst({
@@ -184,18 +199,17 @@ export async function confirmMobilePaymentAction(orderId: string) {
     return { error: "Commande introuvable" };
   }
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { paymentStatus: "COMPLETED" },
-  });
+  if (order.paymentStatus === "COMPLETED") {
+    redirect("/client?success=true");
+  }
 
-  revalidatePath("/client");
-  redirect("/client?payment=confirmed");
+  redirect(`/client/paiement-mvola/${order.id}`);
 }
 
-export async function confirmMobilePaymentFormAction(formData: FormData) {
+export function confirmMobilePaymentFormAction(formData: FormData) {
   const orderId = formData.get("orderId") as string;
-  await confirmMobilePaymentAction(orderId);
+  // ✅ Cette fonction est maintenant un simple redirect vers la preuve MVola
+  goToMvolaProof(orderId);
 }
 
 export async function searchBooksAction(query: string, category?: string) {
@@ -218,9 +232,12 @@ export async function searchBooksAction(query: string, category?: string) {
       vendor: {
         select: { companyName: true, location: true },
       },
-      orders: {
-        where: { paymentStatus: "COMPLETED" },
-        select: { id: true },
+      items: {
+        include: {
+          order: {
+            select: { paymentStatus: true }
+          }
+        }
       },
     },
     orderBy: { createdAt: "desc" },
@@ -228,35 +245,35 @@ export async function searchBooksAction(query: string, category?: string) {
 }
 
 export async function getTopBooks() {
-    const books = await prisma.book.findMany({
-      include: {
-        vendor: {
-          select: {
-            companyName: true
-          }
-        },
-        orderItems: {
-          include: {
-            order: {
-              select: {
-                paymentStatus: true
-              }
+  const books = await prisma.book.findMany({
+    include: {
+      vendor: {
+        select: {
+          companyName: true
+        }
+      },
+      items: {
+        include: {
+          order: {
+            select: {
+              paymentStatus: true
             }
           }
         }
       }
-    });   
-      return books.map((book) => {
-    const completedItems = book.orderItems.filter(
+    }
+  });   
+  return books.map((book) => {
+    const completedItems = book.items.filter(
       (item) => item.order.paymentStatus === "COMPLETED"
     );
 
     return {
       ...book,
-      orderItems: completedItems,
+      items: completedItems,
       totalSales: completedItems.length, 
     };
-  }).filter(book => book.orderItems.length > 0);
+  }).filter(book => book.items.length > 0);
 }
 
 export async function getVendors() {
@@ -330,21 +347,16 @@ export async function submitMvolaProof(formData: FormData) {
     await prisma.order.update({
       where: { id: orderId },
       data: {
-        clientTrxRef: cleanRef, // On enregistre la référence donnée par le client
-        mvolaStatus: "EN_ATTENTE_VERIFICATION", // Toujours en attente, jamais VERIFIED ici
+        clientTrxRef: cleanRef,
+        mvolaStatus: "EN_ATTENTE_VERIFICATION",
         paymentStatus: "PENDING", 
       },
     });
 
-    // ✅ AJOUT DE LA REDIRECTION ICI
-    // Si tout est bon, on redirige immédiatement vers la page d'attente avec l'ID
     return { success: true, orderId };
-    
-    // La ligne ci-dessous ne sera jamais atteinte grâce à redirect()
-    // return { success: true }; 
     
   } catch (error) {
     console.error("Erreur lors de la validation MVola :", error);
     return { error: "Une erreur technique est survenue. Veuillez réessayer." };
   }
-}   
+}
