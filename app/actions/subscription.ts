@@ -13,33 +13,33 @@ export async function selectSubscriptionPlan(formData: FormData) {
   if (!plan) return { error: "Plan diso." };
 
   try {
-    const session = await getStripe().checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: `Abonnement ${plan.name} - NY HERIN'NY BOKY`,
-              description: plan.description,
-            },
-            unit_amount: plan.price,
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        type: "subscription",
-        plan: planId,
-        userId: user.id,
-      },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/inscription/vendeur/livres?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/inscription/vendeur/abonnement?cancelled=true`,
-    });
+     const session = await getStripe().checkout.sessions.create({
+       mode: "payment",
+       payment_method_types: ["card"],
+       line_items: [
+         {
+           price_data: {
+             currency: "eur",
+             product_data: {
+               name: `Abonnement ${plan.name} - NY HERIN'NY BOKY`,
+               description: plan.description,
+             },
+             unit_amount: plan.price,
+           },
+           quantity: 1,
+         },
+       ],
+       metadata: {
+         type: "subscription",
+         plan: planId,
+         userId: user.id,
+       },
+       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/inscription/vendeur/livres?success=true`,
+       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/inscription/vendeur/abonnement?cancelled=true`,
+     });
 
-    if (session.url) {
-      redirect(session.url);
+     if (session.url) {
+       redirect(session.url);
     }
     return { error: "Tsy afaka namorona ny fandoavana." };
   } catch {

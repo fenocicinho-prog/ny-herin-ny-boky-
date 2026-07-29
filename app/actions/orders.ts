@@ -1,5 +1,6 @@
 "use server";
 
+import { sendSaleEmail } from "@/lib/send-sale-email";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -15,11 +16,8 @@ const orderSchema = z.object({
   paymentMethod: z.enum(["STRIPE", "MOBILE_MONEY"]),
   phoneNumber: z.string().optional(),
 });
-type CreateOrderInput = 
-  | { error: string; message?: never }
-  | { message: string; error?: never };
 
-export async function createOrderAction(formData: FormData): Promise<CreateOrderInput> {
+export async function createOrderAction(formData: FormData) {
   const user = await requireAuth("CLIENT");
 
   const parsed = orderSchema.safeParse({
@@ -41,12 +39,16 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
     return { error: "Livre introuvable" };
   }
 
-  const amount =
-    parsed.data.type === "BUY" ? (book.buyPrice ?? 0) : (book.rentPrice ?? 0);
+  // 1. Calcul sécurisé du montant (Achat ou Location)
+  const amount = parsed.data.type === "BUY" ? (book.buyPrice ?? 0) : (book.rentPrice ?? 0);
 
   if (amount <= 0) {
     return { error: "Prix non disponible pour cette option" };
   }
+
+  // 2. Calcul sécurisé des frais et gains (basé sur le montant réel)
+  const platformFee = amount * 0.10; // 10%
+  const vendorPaymentAmount = amount * 0.90; // 90%
 
   if (parsed.data.paymentMethod === "MOBILE_MONEY") {
     if (!parsed.data.phoneNumber) {
@@ -58,35 +60,68 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         type: parsed.data.type,
         paymentMethod: "MOBILE_MONEY",
         paymentStatus: "PENDING",
-          deliveryStatus: "PENDING",
+        deliveryStatus: "PENDING",
         amount,
         phoneNumber: parsed.data.phoneNumber,
-        bookId: book.id,
         userId: user.id,
+        paidToVendor: false,
+        mvolaStatus: "EN_ATTENTE_CLIENT",
+        clientTrxRef: `TRX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        platformFee,
+        vendorPaymentAmount,
+        items: {
+          create: {
+            bookId: book.id,
+            sellerId: book.vendorId,
+            quantity: 1,
+            price: amount,
+          }
+        }
       },
+      include: {
+        user: true,
+        items: { 
+          include: { 
+            book: true, 
+            seller: true // 'seller' est déjà l'objet User complet
+          } 
+        }
+      }
     });
 
-    revalidatePath("/client");
-    redirect(`/client/commande/${order.id}?mobile=true`);
+    const item = order.items[0];
+    
+    // 3. Envoi de l'email (Protégé contre les erreurs)
+    // On vérifie que item et seller existent avant d'envoyer
+    if (item && item.seller && item.seller.email) {
+      try {
+        await sendSaleEmail({
+          vendorEmail: item.seller.email, // ✅ Correction: accès direct à .email
+          bookTitle: item.book.title,
+          buyerName: order.user.firstName || order.user.email,
+          price: order.amount,
+          commission: order.platformFee,
+          gain: order.vendorPaymentAmount
+        });
+      } catch (emailError) {
+        console.error("Échec envoi email:", emailError);
+        // On ne bloque pas la commande si l'email échoue
+      }
+    }
+
+    redirect(`/client/paiement-mvola/${order.id}`);
   }
 
   // Stripe checkout
   try {
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
-      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
-            currency: "mg",
-            product_data: {
-              name: book.title,
-              description:
-                parsed.data.type === "BUY"
-                  ? "Achat de livre"
-                  : "Location de livre",
-            },
-            unit_amount: Math.round(amount),
+            currency: "eur", // Ou "mga" si configuré
+            product_data: { name: book.title },
+            unit_amount: Math.round(amount), // Stripe attend un entier
           },
           quantity: 1,
         },
@@ -106,11 +141,23 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         type: parsed.data.type,
         paymentMethod: "STRIPE",
         paymentStatus: "PENDING",
-          deliveryStatus: "PENDING",
+        deliveryStatus: "PENDING",
         amount,
         stripeSessionId: session.id,
-        bookId: book.id,
         userId: user.id,
+        clientTrxRef: `STR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        mvolaStatus: "EN_ATTENTE_CLIENT",
+        paidToVendor: false,
+        platformFee,
+        vendorPaymentAmount,
+        items: {
+          create: {
+            bookId: book.id,
+            sellerId: book.vendorId,
+            quantity: 1,
+            price: amount,
+          },
+        },
       },
     });
 
@@ -118,12 +165,13 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
       redirect(session.url);
     }
     return { error: "Impossible de créer la session de paiement" };
-  } catch {
+  } catch (e) {
+    console.error(e);
     return {
       error: `Stripe non configuré. Utilisez Mobile Money au ${MOBILE_MONEY_PHONE}`,
     };
   }
-}
+}   
 
 export async function confirmMobilePaymentAction(orderId: string) {
   const user = await requireAuth("CLIENT");
@@ -155,7 +203,7 @@ export async function searchBooksAction(query: string, category?: string) {
 
   if (query) {
     where.OR = [
-      { name: { contains: query } },
+      { title: { contains: query } },
       { description: { contains: query } },
     ];
   }
@@ -180,19 +228,35 @@ export async function searchBooksAction(query: string, category?: string) {
 }
 
 export async function getTopBooks() {
-  const books = await prisma.book.findMany({
-    include: {
-      vendor: { select: { companyName: true } },
-      orders: {
-        where: { paymentStatus: "COMPLETED" },
-        select: { id: true },
-      },
-    },
-  });
+    const books = await prisma.book.findMany({
+      include: {
+        vendor: {
+          select: {
+            companyName: true
+          }
+        },
+        orderItems: {
+          include: {
+            order: {
+              select: {
+                paymentStatus: true
+              }
+            }
+          }
+        }
+      }
+    });   
+      return books.map((book) => {
+    const completedItems = book.orderItems.filter(
+      (item) => item.order.paymentStatus === "COMPLETED"
+    );
 
-  return books
-    .sort((a, b) => b.orders.length - a.orders.length)
-    .slice(0, 8);
+    return {
+      ...book,
+      orderItems: completedItems,
+      totalSales: completedItems.length, 
+    };
+  }).filter(book => book.orderItems.length > 0);
 }
 
 export async function getVendors() {
@@ -211,19 +275,76 @@ export async function getVendorStats(vendorId: string) {
   const [sold, borrowed, bookCount] = await Promise.all([
     prisma.order.count({
       where: {
-        book: { vendorId },
+        items: {
+          some: {
+            book: { vendorId },
+          },
+        },
         type: "BUY",
         paymentStatus: "COMPLETED",
       },
     }),
     prisma.order.count({
       where: {
-        book: { vendorId },
+        items: {
+          some: {
+            book: { vendorId },
+          },
+        },
         type: "BORROW",
         paymentStatus: "COMPLETED",
       },
     }),
-    prisma.book.count({ where: { vendorId } }),
+    prisma.book.count({
+      where: { vendorId },
+    }),
   ]);
+
   return { sold, borrowed, bookCount };
-}
+}   
+
+export async function submitMvolaProof(formData: FormData) {
+  const orderId = formData.get("orderId") as string;
+  const clientTrxRef = formData.get("clientTrxRef") as string;
+
+  const cleanRef = clientTrxRef.trim().toUpperCase();
+
+  if (!cleanRef || cleanRef.length < 5) {
+    return { error: "La référence de transaction semble invalide." };
+  }
+
+  try {
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        clientTrxRef: cleanRef,
+        id: { not: orderId },
+      },
+    });
+
+    if (existingOrder) {
+      return { 
+        error: "Cette référence de transaction a déjà été utilisée." 
+      };
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        clientTrxRef: cleanRef, // On enregistre la référence donnée par le client
+        mvolaStatus: "EN_ATTENTE_VERIFICATION", // Toujours en attente, jamais VERIFIED ici
+        paymentStatus: "PENDING", 
+      },
+    });
+
+    // ✅ AJOUT DE LA REDIRECTION ICI
+    // Si tout est bon, on redirige immédiatement vers la page d'attente avec l'ID
+    return { success: true, orderId };
+    
+    // La ligne ci-dessous ne sera jamais atteinte grâce à redirect()
+    // return { success: true }; 
+    
+  } catch (error) {
+    console.error("Erreur lors de la validation MVola :", error);
+    return { error: "Une erreur technique est survenue. Veuillez réessayer." };
+  }
+}   
