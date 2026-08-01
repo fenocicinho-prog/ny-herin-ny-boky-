@@ -64,6 +64,8 @@ export async function createOrderAction(formData: FormData) {
 
     const clientTrxRef = `TRX-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
+    const deliveryLocation = formData.get("deliveryLocation") as string | null;
+
     const order = await prisma.order.create({
       data: {
         type: parsed.data.type,
@@ -71,6 +73,7 @@ export async function createOrderAction(formData: FormData) {
         paymentStatus: "PENDING",
         deliveryStatus: "PENDING",
         amount,
+        deliveryLocation: deliveryLocation || null,
         phoneNumber: parsed.data.phoneNumber,
         userId: user.id,
         paidToVendor: false,
@@ -109,7 +112,9 @@ export async function createOrderAction(formData: FormData) {
           buyerName: order.user.firstName || order.user.email,
           price: order.amount,
           commission: order.platformFee,
-          gain: order.vendorPaymentAmount
+          gain: order.vendorPaymentAmount,
+          buyerPhone: order.phoneNumber || order.user.phoneNumber || null,
+          deliveryLocation: order.deliveryLocation || order.user.location || null,
         });
       } catch (emailError) {
         console.error("Échec envoi email:", emailError);
@@ -159,6 +164,7 @@ export async function createOrderAction(formData: FormData) {
         paidToVendor: false,
         platformFee,
         vendorPaymentAmount,
+        deliveryLocation: formData.get("deliveryLocation") as string | null,
         items: {
           create: {
             bookId: book.id,
@@ -232,7 +238,7 @@ export async function searchBooksAction(query: string, category?: string) {
       vendor: {
         select: { companyName: true, location: true },
       },
-      items: {
+      orderItems: {
         include: {
           order: {
             select: { paymentStatus: true }
@@ -252,7 +258,7 @@ export async function getTopBooks() {
           companyName: true
         }
       },
-      items: {
+      orderItems: {
         include: {
           order: {
             select: {
@@ -264,16 +270,16 @@ export async function getTopBooks() {
     }
   });   
   return books.map((book) => {
-    const completedItems = book.items.filter(
+    const completedItems = book.orderItems.filter(
       (item) => item.order.paymentStatus === "COMPLETED"
     );
 
     return {
       ...book,
-      items: completedItems,
+      orderItems: completedItems,
       totalSales: completedItems.length, 
     };
-  }).filter(book => book.items.length > 0);
+  }).filter(book => book.orderItems.length > 0);
 }
 
 export async function getVendors() {

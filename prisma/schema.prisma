@@ -154,6 +154,7 @@ model Order {
   paymentMethod       String          // "STRIPE", "MOBILE_MONEY", "MVOLA"
   paymentStatus       String          @default("PENDING")
   deliveryStatus      String          @default("PENDING")
+  deliveryLocation    String?
   paidToVendor        Boolean         @default(false)
   amount              Float
   phoneNumber         String?

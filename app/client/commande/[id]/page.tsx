@@ -76,3 +76,5 @@ export function OrderConfirmationContent({
     </div>
   );
 }
+
+export default OrderConfirmationContent;

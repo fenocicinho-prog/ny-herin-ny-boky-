@@ -9,7 +9,9 @@ export async function sendSaleEmail({
   buyerName,
   price,
   commission,
-  gain
+  gain,
+  buyerPhone,
+  deliveryLocation,
 }: {
   vendorEmail: string;
   bookTitle: string;
@@ -17,6 +19,8 @@ export async function sendSaleEmail({
   price: number;
   commission: number;
   gain: number;
+  buyerPhone?: string | null;
+  deliveryLocation?: string | null;
 }) {
   try {
     await resend.emails.send({
@@ -25,14 +29,21 @@ export async function sendSaleEmail({
       
       // ✅ TO : Pour tester, forcez VOTRE email. 
       // Ne mettez PAS vendorEmail ici tant que vous n'avez pas vérifié de domaine.
-      to: 'achillecicinhofeno@gmail.com', 
-      
-      subject: `📚 Test Vente : ${bookTitle}`,
+      to: process.env.RESEND_ALLOW_UNVERIFIED === 'true' ? vendorEmail : (process.env.DEV_NOTIFICATION_EMAIL || 'achillecicinhofeno@gmail.com'),
+
+      subject: `📚 Nouvelle commande : ${bookTitle}`,
       html: `
-        <h1>Test de notification</h1>
-        <p>Ceci est un email de test envoyé à votre adresse vérifiée.</p>
-        <p>Vendeur cible : ${vendorEmail}</p>
-        <!-- Ajoutez le reste du contenu ici -->
+        <h1>Commande validée</h1>
+        <p>Bonjour,</p>
+        <p>Une commande pour votre livre <strong>${bookTitle}</strong> a été validée.</p>
+        <ul>
+          <li>Acheteur: ${buyerName}</li>
+          <li>Montant: ${price} Ar</li>
+          <li>Commission plateforme: ${commission} Ar</li>
+          <li>Montant à reverser: ${gain} Ar</li>
+        </ul>
+        ${buyerPhone ? `<p>Veuillez contacter l'acheteur au: <strong>${buyerPhone}</strong></p>` : ''}
+        ${deliveryLocation ? `<p>Localisation acheteur: <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deliveryLocation)}">Voir la localisation</a></p>` : ''}
       `,
     });
     return { success: true };

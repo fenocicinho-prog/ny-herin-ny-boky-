@@ -2,15 +2,14 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Header } from "@/components/layout/Header"; // Votre header existant
-import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher"; // Votre bouton de langue
-import { User } from "@prisma/client";
+import { Header } from "@/components/layout/Header";
+import type { SessionUser } from "@/lib/auth";
 
 export function DashboardShell({ 
   user, 
   children 
 }: { 
-  user: User, // Remplacez 'any' par le type réel de votre utilisateur
+  user: SessionUser | null;
   children: ReactNode 
 }) {
   return (

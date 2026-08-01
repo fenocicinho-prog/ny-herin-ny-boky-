@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Non connecté" }, { status: 401 })
 
     // 2. VALIDATION INPUT
-    const { cart }: { cart: CartItem[] } = await req.json()
+    const { cart, deliveryLocation }: { cart: CartItem[]; deliveryLocation?: string } = await req.json()
     if (!cart || cart.length === 0) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 })
     }
@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     const order = await prisma.order.create({
       data: {
         userId: user.id,
+        deliveryLocation: deliveryLocation || null,
         clientTrxRef,
         amount: realTotal,
         paymentMethod: "MOBILE_MONEY",

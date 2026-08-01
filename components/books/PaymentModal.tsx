@@ -66,6 +66,18 @@ export function PaymentModal({ book, orderType, onClose }: PaymentModalProps) {
       // ✅ CORRECTION : ON_SITE est maintenant géré comme MOBILE_MONEY dans le backend
       formData.set("paymentMethod", method === "ON_SITE" ? "MOBILE_MONEY" : "MOBILE_MONEY");
       if (phone) formData.set("phoneNumber", phone);
+      // Try to capture browser geolocation (optional)
+      if (typeof navigator !== "undefined" && navigator.geolocation) {
+        try {
+          const pos: GeolocationPosition = await new Promise((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+          );
+          const coords = pos.coords;
+          formData.set("deliveryLocation", `${coords.latitude},${coords.longitude}`);
+        } catch (geoErr) {
+          console.debug("Géoloc non autorisée ou indisponible", geoErr);
+        }
+      }
 
       const result = await createOrderAction(formData);
       if (result?.error) throw new Error(result.error);

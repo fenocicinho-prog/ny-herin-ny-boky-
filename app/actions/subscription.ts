@@ -21,8 +21,8 @@ export async function selectSubscriptionPlan(formData: FormData) {
            price_data: {
              currency: "eur",
              product_data: {
-               name: `Abonnement ${plan.name} - NY HERIN'NY BOKY`,
-               description: plan.description,
+               name: `Abonnement ${plan.nameKey} - NY HERIN'NY BOKY`,
+               description: plan.descriptionKey,
              },
              unit_amount: plan.price,
            },

@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { BookOpen } from "lucide-react";
 import type { BookCategory } from "@prisma/client";

@@ -1,5 +1,5 @@
 "use client";
-import { User } from "@prisma/client";
+import type { SessionUser } from "@/lib/auth";
 import { deleteBookAction } from '@/app/actions/books'
 import { useLanguage } from "@/lib/LanguageContext";
 import { DeleteButton } from '@/components/button/DeleteButton';
@@ -12,14 +12,14 @@ interface VendorDashboardClientProps {
   books: Array<{
     id: string;
     title: string;
-    category: string; // ou BookCategory si vous utilisez l'enum
-    buyPrice: number | null; // <--- AJOUTEZ "| null" ici
+    category: string;
+    buyPrice: number | null;
     rentPrice: number | null;
     imageUrl: string | null;
   }>;
   subscriptionValid: boolean;
   daysRemaining: number | null;
-  user: User; // Adaptez le type selon votre modèle User; // Ajoutez cette prop pour l'action de suppression
+  user: SessionUser;
 }
 
 export function VendorDashboardClient({ 

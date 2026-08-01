@@ -45,3 +45,4 @@ export function MvolaPaymentContent({
     </div>
   );
 }
+export default MvolaPaymentContent;

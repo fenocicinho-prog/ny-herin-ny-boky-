@@ -80,3 +80,5 @@ export function PaymentPendingContent({
     </div>
   );
 }
+
+export default PaymentPendingContent;

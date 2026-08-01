@@ -40,8 +40,16 @@ export async function POST(request: Request) {
         mvolaStatus: 'EN_ATTENTE_CLIENT',
         platformFee: book.buyPrice * 0.10,
         vendorPaymentAmount: book.buyPrice * 0.90,
+        items: {
+          create: {
+            bookId: book.id,
+            sellerId: book.vendorId,
+            quantity: 1,
+            price: book.buyPrice,
+          }
+        }
       },
-      include: { book: true, user: true }
+      include: { items: { include: { book: true, seller: true } }, user: true }
     })
     return NextResponse.json(order, { status: 201 })
   } catch (error) {
