@@ -22,7 +22,7 @@
     "dev": "npx next dev --webpack",
     "stripe": "npx stripe listen --forward-to localhost:3000/api/webhooks/stripe",
     "start-all": "concurrently \"npm run dev\" \"npm run stripe\"",
-    "build": "npx prisma generate && npx prisma db push && npx next build",
+    "build": "npx prisma generate && npx next build",
     "start": "npx next start",
     "lint": "npx eslint .",
     "db:generate": "npx prisma generate",

@@ -29,10 +29,22 @@ export default function CheckoutPage() {
   }, [cart])
 
   const handlePayment = async () => {
+    let deliveryLocation: string | null = null;
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      try {
+        const pos: GeolocationPosition = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+        );
+        deliveryLocation = `${pos.coords.latitude},${pos.coords.longitude}`;
+      } catch (e) {
+        console.debug("Géoloc non disponible", e);
+      }
+    }
+
     const res = await fetch("/api/orders/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cart, deliveryLocation: null }),
+      body: JSON.stringify({ cart, deliveryLocation }),
     })
     const data = await res.json()
     setPaymentInfo(data)

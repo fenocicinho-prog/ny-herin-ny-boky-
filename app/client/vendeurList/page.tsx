@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Header } from "@/components/layout/Header";
 import { VendorCard } from "@/components/vendors/VendorCard";
 import { getVendors } from "@/app/actions/orders";

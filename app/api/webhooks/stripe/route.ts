@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe-server";
 import { prisma } from "@/lib/prisma";
+import { sendSaleEmail } from "@/lib/send-sale-email";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
       if (!order) {
         console.error("Commande introuvable pour orderId webhook:", orderId);
       } else {
-        await prisma.order.update({
+        const updatedOrder = await prisma.order.update({
           where: { id: orderId },
           data: {
             paymentStatus: "COMPLETED",
@@ -38,8 +39,35 @@ export async function POST(req: Request) {
             stripeSessionId: session.id,
             mvolaStatus: "PAYE",
           },
+          include: {
+            items: { include: { book: true, seller: true } },
+            user: true,
+          },
         });
         console.log("Commande mise à jour par webhook (COMPLETED, IN_TRANSIT):", orderId);
+
+        // Envoyer l'email aux vendeurs
+        try {
+          if (updatedOrder.items) {
+            for (const item of updatedOrder.items) {
+              const seller = item.seller;
+              if (seller && seller.email) {
+                await sendSaleEmail({
+                  vendorEmail: seller.email,
+                  bookTitle: item.book?.title || 'Votre livre',
+                  buyerName: updatedOrder.user?.firstName || updatedOrder.user?.email || 'Acheteur',
+                  price: updatedOrder.amount,
+                  commission: updatedOrder.platformFee,
+                  gain: updatedOrder.vendorPaymentAmount,
+                  buyerPhone: updatedOrder.phoneNumber || updatedOrder.user?.phoneNumber || null,
+                  deliveryLocation: updatedOrder.deliveryLocation || updatedOrder.user?.location || null,
+                });
+              }
+            }
+          }
+        } catch (emailErr) {
+          console.error("Erreur envoi email webhook Stripe:", emailErr);
+        }
       }
     }
 

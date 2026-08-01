@@ -1,6 +1,7 @@
 // app/api/mvola/receive/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendSaleEmail } from "@/lib/send-sale-email";
 
 // SECRET pour sécuriser. Mets la même valeur dans l'app Android
 const WEBHOOK_SECRET = process.env.MVOLA_WEBHOOK_SECRET || "nyherinnyboky2026"
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
 
     // 2. On cherche la commande avec la ref du client
     const order = await prisma.order.findUnique({
-      where: { id: clientTrxRef }
+      where: { clientTrxRef: clientTrxRef }
     })
 
     if (!order) {
@@ -29,9 +30,37 @@ export async function POST(req: Request) {
       data: {
         adminTrxRef,
         mvolaStatus: "PAYE",
-        paymentStatus: "COMPLETED"
+        paymentStatus: "COMPLETED",
+        deliveryStatus: "IN_TRANSIT"
+      },
+      include: {
+        items: { include: { book: true, seller: true } },
+        user: true,
       }
     })
+
+    // 4. Notification par email
+    try {
+      if (updatedOrder.items) {
+        for (const item of updatedOrder.items) {
+          const seller = item.seller;
+          if (seller && seller.email) {
+            await sendSaleEmail({
+              vendorEmail: seller.email,
+              bookTitle: item.book?.title || 'Votre livre',
+              buyerName: updatedOrder.user?.firstName || updatedOrder.user?.email || 'Acheteur',
+              price: updatedOrder.amount,
+              commission: updatedOrder.platformFee,
+              gain: updatedOrder.vendorPaymentAmount,
+              buyerPhone: updatedOrder.phoneNumber || updatedOrder.user?.phoneNumber || null,
+              deliveryLocation: updatedOrder.deliveryLocation || updatedOrder.user?.location || null,
+            });
+          }
+        }
+      }
+    } catch (emailErr) {
+      console.error("Erreur notification email MVola:", emailErr);
+    }
 
     return NextResponse.json({ 
       success: true, 

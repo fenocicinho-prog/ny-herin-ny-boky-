@@ -24,6 +24,7 @@ export const SUBSCRIPTION_PLANS = {
       "feature_1_book",
       "feature_dashboard"
     ],
+    maxBooks: 1,
     buttonTextKey: "btn_choose_free",
     buttonColor: "bg-gray-700 hover:bg-gray-800"
   },

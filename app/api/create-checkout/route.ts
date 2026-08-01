@@ -14,7 +14,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const body = await request.json();
-    const { bookId, type: orderType, price, title } = body;
+    const { bookId, type: orderType, price, title, deliveryLocation } = body;
 
     if (!bookId || !price) {
       return NextResponse.json({ error: "bookId et price sont requis" }, { status: 400 });
@@ -50,6 +50,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         mvolaStatus: "EN_ATTENTE_CLIENT",
         platformFee,
         vendorPaymentAmount,
+        deliveryLocation: deliveryLocation || null,
         items: {
           create: {
             bookId: book.id,
@@ -76,8 +77,8 @@ export async function POST(request: Request): Promise<NextResponse> {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/client`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/client`,
       metadata: {
         orderId: order.id,
         bookId: book.id,
