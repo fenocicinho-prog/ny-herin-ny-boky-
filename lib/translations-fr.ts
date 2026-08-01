@@ -2,6 +2,38 @@
 
 export const translationsFr: Record<string, string> = {
   // NAVIGATION
+
+   plan_1_book: "1 livre",
+  plan_1_book_desc: "Partagez 1 livre sur la plateforme",
+  feature_1_book: "1 livre mis en vente",
+  feature_dashboard: "Tableau de bord vendeur",
+  btn_choose_free: "Choisir l'offre gratuite",
+  
+  plan_20_books: "20 Livres",
+  plan_20_books_desc: "Partagez jusqu'à 20 livres sur la plateforme",
+  btn_pay_stripe: "Payer avec Stripe",
+  
+  plan_unlimited: "Illimité",
+  plan_unlimited_desc: "Partagez un nombre illimité de livres",
+  
+  "site.name": "La force du livre",
+  "categories.Fiction": "Histoires imaginaires (Romans, Nouvelles)",
+  "categories.NonFiction": "réels, savoirs, biographies",
+  "categories.PoésieThéatre": "oeuvres en vers ou destinées à la scène",
+  "categories.LivrespourlaJeunesse": "Albums, contes, jeunes adultes (YA)",
+  "categories.Autre": "Autre",
+  "reasons.study": "Apprendre et respecter les livres",
+  "reasons.search_mg": "Chercher des livres malgaches",
+  "reasons.leisure": "Lire pour le plaisir",
+  "reasons.research": "Études et recherches",
+  "reasons.other": "Autre",
+  "bookTypes.science": "Sciences",
+  "bookTypes.malagasy": "Malgache",
+  "bookTypes.literature": "Littérature",
+  "bookTypes.history": "Histoire",
+  "bookTypes.contemporary": "Contemporain",
+  "bookTypes.movie": "Cinéma",
+
   "nav.home": "Accueil",
   "nav.client": "Client",
   "nav.vendor": "Vendeur",
@@ -10,6 +42,7 @@ export const translationsFr: Record<string, string> = {
   "nav.register": "S'inscrire",
   "nav.logout": "Se déconnecter",
   "nav.profile": "Mon profil",
+  "nav.menu": "Menu",
 
   // HEADER
   "header.siteName": "La force des livres",
@@ -74,8 +107,14 @@ export const translationsFr: Record<string, string> = {
   "registerVendor.loading": "Inscription en cours...",
   "registerVendor.hasAccount": "Déjà un compte ?",
   "registerVendor.login": "Se connecter",
-
+  "registerVendor.number": "Numero pour rcevoir l'argent",
+  "registerVendor.payementMode": "Mode de payement",
+  "registerVendor.commission": "Commission (-10%)",
+  "registerVendor.comDesc": "Inscription gratuit avec commission",
+  "registerVendor.abonnement": "Abonnement",
+  "registerVendor.abDesc": "Payer des abonnements par mois",
   // ABONNEMENT
+  "subscription.month": "mois",
   "subscription.title": "Choisissez votre plan",
   "subscription.subtitle": "Choisissez le plan qui vous convient",
   "subscription.free": "Gratuit",
@@ -129,9 +168,11 @@ export const translationsFr: Record<string, string> = {
   "book.category": "Catégorie",
   "book.imageUrl": "URL de l'image",
   "book.submit": "Ajouter",
+  "book.change": "Modifier le livre",
   "book.submitLoading": "Ajout en cours...",
   "book.edit": "Modifier",
   "book.delete": "Supprimer",
+  "book.save": "Enregistrer",
   "book.confirmDelete": "Voulez-vous vraiment supprimer ce livre ?",
   "book.science": "Science",
   "book.malagasy": "Malgache",
@@ -266,6 +307,9 @@ export const translationsFr: Record<string, string> = {
   "vendorProfile.books": "Livres",
   "vendorProfile.edit": "Modifier",
   "vendorProfile.delete": "Supprimer",
+  "vendorProfile.help": "Aide",
+  "vendorDashboard.myBooks": "Ireo bokiko",
+  "common.dashboard": "Tableau de bord",
 
   // DELETE BUTTON
   "delete.confirm": "Voulez-vous vraiment supprimer ?",
@@ -290,4 +334,5 @@ export const translationsFr: Record<string, string> = {
   "success.paymentConfirmed": "Paiement confirmé !",
   "success.orderCreated": "Commande créée !",
   "success.subscriptionActive": "Abonnement activé !",
+  "common.back": "Retour"
 };

@@ -28,6 +28,7 @@ CREATE TABLE "User" (
     "sellerPlanType" TEXT DEFAULT 'COMMISSION',
     "subscriptionPlan" TEXT NOT NULL DEFAULT 'FREE',
     "subscriptionActive" BOOLEAN NOT NULL DEFAULT false,
+    "subscriptionStatus" TEXT DEFAULT 'ACTIVE',
     "subscriptionEndsAt" DATETIME,
     "stripeSessionId" TEXT,
     "stripeCustomerId" TEXT,
@@ -58,22 +59,22 @@ CREATE TABLE "Order" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "type" TEXT NOT NULL,
     "paymentMethod" TEXT NOT NULL,
-    "paymentStatus" TEXT NOT NULL,
-    "deliveryStatus" TEXT NOT NULL,
-    "paidToVendor" BOOLEAN NOT NULL,
+    "paymentStatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "deliveryStatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "paidToVendor" BOOLEAN NOT NULL DEFAULT false,
     "amount" REAL NOT NULL,
     "phoneNumber" TEXT,
     "stripeSessionId" TEXT,
     "mvolaFee" REAL,
-    "mvolaStatus" TEXT NOT NULL,
+    "mvolaStatus" TEXT NOT NULL DEFAULT 'EN_ATTENTE_CLIENT',
     "clientTrxRef" TEXT NOT NULL,
     "adminTrxRef" TEXT,
-    "platformFee" REAL NOT NULL,
-    "vendorPaymentAmount" REAL NOT NULL,
+    "platformFee" REAL NOT NULL DEFAULT 0,
+    "vendorPaymentAmount" REAL NOT NULL DEFAULT 0,
     "userId" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -86,8 +87,8 @@ CREATE TABLE "OrderItem" (
     "price" REAL NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "OrderItem_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "Book" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "OrderItem_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "OrderItem_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "Book" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "OrderItem_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateIndex

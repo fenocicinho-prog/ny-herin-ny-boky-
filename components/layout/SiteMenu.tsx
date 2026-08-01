@@ -1,9 +1,8 @@
-"use client";
+'use client'
 
 import Link from "next/link";
 import {
   Home,
-  BookOpen,
   ShoppingBag,
   User,
   Store,
@@ -13,21 +12,18 @@ import { useLanguage } from "@/lib/LanguageContext";
 
 export function SiteMenu() {
   const { t } = useLanguage();
-
-  const menuItems = [
-    { href: "/", icon: Home, label: t("nav.home") },
-    { href: "/client", icon: BookOpen, label: t("book.title") },
-    { href: "/client", icon: ShoppingBag, label: t("vendorDashboard.sales") },
-    { href: "/connexion", icon: User, label: t("nav.profile") },
-    { href: "/inscription/vendeur", icon: Store, label: t("nav.vendor") },
-    { href: "#", icon: HelpCircle, label: "Fanampiana" },
+const menuItems = [
+  { href: "/", icon: Home, label: t("nav.home") },
+  { href: "/client/commande/latest", icon: ShoppingBag, label: t("vendorDashboard.sales") },
+  { href: "/client/profile", icon: User, label: t("nav.profile") },
+  { href: "/client/vendeurList", icon: Store, label: t("nav.vendor") },
+  { href: "#", icon: HelpCircle, label: t("vendorProfile.help") },
   ];
-
   return (
     <aside className="w-full shrink-0 lg:w-56">
       <div className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-amber-700">
-          {t("nav.home")}
+          {t("nav.menu")}
         </h3>
         <nav className="space-y-1">
           {menuItems.map((item) => (

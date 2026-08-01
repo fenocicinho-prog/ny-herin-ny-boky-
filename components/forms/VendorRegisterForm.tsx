@@ -72,7 +72,7 @@ export function VendorRegisterForm() {
       </div>
        <div>
         <label className="block text-sm font-medium text-stone-700">
-          Numero fandraisana vidim-boky
+          {t("registerVendor.number")}
         </label>
         <input
           name="mvolaNumber"
@@ -86,7 +86,7 @@ export function VendorRegisterForm() {
       {/* --- NOUVEAU : CHOIX DU MODÈLE ÉCONOMIQUE --- */}
       <div className="pt-4 border-t border-stone-200">
         <label className="block text-sm font-bold text-stone-800 mb-3">
-          Fomba fandoavana :
+          {t("registerVendor.payementMode")} :
         </label>
         <div className="space-y-3">
           {/* Option 1 : Commission (Par défaut) */}
@@ -99,8 +99,8 @@ export function VendorRegisterForm() {
               className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500"
             />
             <div className="ml-3">
-              <span className="block text-sm font-bold text-amber-900">Commission (Hazo isaky ny varotra)</span>
-              <span className="block text-xs text-amber-700">Maimaim-poana ny fisoratana anarana. Misaraka kely isaky ny manana varotra.</span>
+              <span className="block text-sm font-bold text-amber-900">{t("registerVendor.commission")}</span>
+              <span className="block text-xs text-amber-700">{t("registerVendor.comDesc")}</span>
             </div>
           </label>
 
@@ -113,8 +113,8 @@ export function VendorRegisterForm() {
               className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500"
             />
             <div className="ml-3">
-              <span className="block text-sm font-bold text-stone-900">Abonnement (Isam-bolana)</span>
-              <span className="block text-xs text-stone-600">Mandoa vola isam-bolana. Tsy misy sarany isaky ny manana varotra.</span>
+              <span className="block text-sm font-bold text-stone-900">{t("registerVendor.abonnement")}</span>
+              <span className="block text-xs text-stone-600">{t("registerVendor.abDesc")}</span>
             </div>
           </label>
         </div>

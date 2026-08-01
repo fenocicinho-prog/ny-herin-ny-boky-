@@ -5,6 +5,39 @@ export type Lang = "mg" | "fr";
 
 export const translations = {
   // ===== NAVIGATION / HEADER =====
+
+  plan_1_book: "1 boky",
+  plan_1_book_desc: "Mizara boky 1 eo amin'ny platforma",
+  feature_1_book: "Mandafo boky 1",
+  feature_dashboard: "Dashboard mpivarotra",
+  btn_choose_free: "Safidio maimaimpoana",
+  
+  plan_20_books: "20 Boky",
+  plan_20_books_desc: "Mizara hatramin'ny boky 20 eo amin'ny platforma",
+  btn_pay_stripe: "Mandoa amin'ny Stripe",
+  
+  plan_unlimited: "Illimité",
+  plan_unlimited_desc: "Mizara boky tsy voafetra",
+
+  "site.name": "Ny herin'ny boky",
+  "categories.Fiction": "Tantara noforonina (tantara lava, tantara fohy)",
+  "categories.NonFiction": "Tantara marina, asa mifototra amin'ny zava-nisy, tantaram-piainana",
+  "categories.PoésieThéatre": "Asa an-tononkalo na natao ho an'ny sehatra",
+  "categories.LivrespourlaJeunesse": "Boky misy sary, angano, tantara foronina ho an'ny tanora (YA)",
+  "categories.Référence": "Rakibolana, rakipahalalana, atlasy",
+  "categories.Autre": "Hafa",
+  "reasons.study": "Mianatra sy mankafy boky",
+  "reasons.search_mg": "Mitady boky malagasy",
+  "reasons.leisure": "Mamaky amin'ny fialamboly",
+  "reasons.research": "Fianarana sy fikarohana",
+  "reasons.other": "Hafa",
+  "bookTypes.science": "Siansa",
+  "bookTypes.malagasy": "Malagasy",
+  "bookTypes.literature": "Literatiora",
+  "bookTypes.history": "Tantara",
+  "bookTypes.contemporary": "Ankehitriny",
+  "bookTypes.movie": "An-tSarimihetsika",
+
   "nav.home": "Trano" as const,
   "nav.client": "Mpitantana",
   "nav.vendor": "Mpivarotra",
@@ -13,6 +46,7 @@ export const translations = {
   "nav.register": "Hisoratra anarana",
   "nav.logout": "Hivoaka",
   "nav.profile": "Mombamomba ahy",
+  "nav.menu": "Menio",
 
   // ===== HEADER =====
   "header.siteName": "Ny herin'ny boky",
@@ -77,8 +111,15 @@ export const translations = {
   "registerVendor.loading": "Miandry...",
   "registerVendor.hasAccount": "Efa manana kaonty?",
   "registerVendor.login": "Hiditra",
+  "registerVendor.number": "Numero andraisana ny vola",
+  "registerVendor.payementMode": "Fomba fandoavana",
+  "registerVendor.commission": "Commission (-10%)",
+  "registerVendor.comDesc": "Misoratra maimaimpoana fa  misy commission",
+  "registerVendor.abonnement": "Abonnement",
+  "registerVendor.abDesc": "Mandoa isam-bolana",
 
   // ===== ABONNEMENT =====
+  "subscription.month": "volana",
   "subscription.title": "Safidio ny drafitra",
   "subscription.subtitle": "Safidio ny drafitra mety aminao",
   "subscription.free": "Maimaimpoana",
@@ -132,8 +173,10 @@ export const translations = {
   "book.category": "Sokajy",
   "book.imageUrl": "Sary URL",
   "book.submit": "Ampiana",
+  "book.change": "Manova boky",
   "book.submitLoading": "Miandry...",
   "book.edit": "Hanova",
+  "book.save": "Tahirizina",
   "book.delete": "Hamafa",
   "book.confirmDelete": "Tena hofafa ny boky?",
   "book.science": "Siansa",
@@ -269,6 +312,9 @@ export const translations = {
   "vendorProfile.books": "Boky",
   "vendorProfile.edit": "Hanova",
   "vendorProfile.delete": "Hamafa",
+  "vendorProfile.help": "Fanampiana",
+  "vendorDashboard.myBooks": "Ireo bokiko",
+  "common.dashboard": "Fafana",
 
   // ===== DELETE BUTTON =====
   "delete.confirm": "Tena ho voafafa?",
@@ -293,6 +339,7 @@ export const translations = {
   "success.paymentConfirmed": "Fandoavana voamarina!",
   "success.orderCreated": "Kaomandy noforonina!",
   "success.subscriptionActive": "Drafitra mavitrika!",
+  "common.back": "Miverina",
 } as const;
 
 export type TranslationKey = keyof typeof translations;

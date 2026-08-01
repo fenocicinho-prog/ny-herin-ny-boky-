@@ -26,11 +26,8 @@ export default async function VendorSubscriptionPage() {
           </span>
         </div>
         <h1 className="mb-2 text-center text-2xl font-bold text-stone-900">
-          Fidiana abonnement
+          Abonnement
         </h1>
-        <p className="mb-8 text-center text-stone-500">
-          Dingana 2 — Safidio ny drafitrao
-        </p>
         <SubscriptionPlans />
       </main>
     </div>

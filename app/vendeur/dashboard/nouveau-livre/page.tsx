@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { AddBookForm } from "@/components/forms/AddBookForm";
 import { useLanguage } from "@/lib/LanguageContext";
 
@@ -10,7 +9,6 @@ export default function VendorBooksPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      <Header />
       <main className="mx-auto max-w-lg px-4 py-16">
         <h1 className="mb-2 text-center text-2xl font-bold text-stone-900">
           {t("vendorDashboard.addBook")}

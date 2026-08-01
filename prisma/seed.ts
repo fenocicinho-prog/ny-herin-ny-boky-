@@ -57,7 +57,7 @@ async function main() {
       description: "Boky momba ny fiainana andavanandro eto Madagasikara",
       buyPrice: 15000,
       rentPrice: 3000,
-      category: "MALAGASY" as const,
+      category: "Fiction" as const,
       vendorId: vendor1.id,
     },
     {
@@ -65,7 +65,7 @@ async function main() {
       description: "Fampianarana siansa ho an'ny ankizy sy tanora",
       buyPrice: 22000,
       rentPrice: 5000,
-      category: "SCIENCE" as const,
+      category: "NonFiction" as const,
       vendorId: vendor1.id,
     },
     {
@@ -73,7 +73,7 @@ async function main() {
       description: "Tantara fohy momba ny tantaran'ny Nosy",
       buyPrice: 18000,
       rentPrice: 4000,
-      category: "HISTOIRE" as const,
+      category: "PoésieThéatre" as const,
       vendorId: vendor2.id,
     },
     {
@@ -81,7 +81,7 @@ async function main() {
       description: "Roman malagasy klasika",
       buyPrice: 12000,
       rentPrice: 2500,
-      category: "LITTERATURE" as const,
+      category: "LivrespourlaJeunesse" as const,
       vendorId: vendor2.id,
     },
     {
@@ -89,7 +89,7 @@ async function main() {
       description: "Fampianarana ny fomba amam-panao eto amintsika",
       buyPrice: 14000,
       rentPrice: 3500,
-      category: "MALAGASY" as const,
+      category: "Référence" as const,
       vendorId: vendor1.id,
     },
     {
@@ -97,7 +97,7 @@ async function main() {
       description: "Boky fianarana biologie ho an'ny terminale",
       buyPrice: 35000,
       rentPrice: 8000,
-      category: "SCIENCE" as const,
+      category: "Autre" as const,
       vendorId: vendor2.id,
     },
   ];

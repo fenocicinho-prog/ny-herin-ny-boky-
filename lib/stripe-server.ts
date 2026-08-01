@@ -16,32 +16,34 @@ export function getStripe() {
 
 export const SUBSCRIPTION_PLANS = {
   FREE: {
-    name: "1 boky",
+    id: "FREE",
+    nameKey: "plan_1_book", // Clé de traduction
     price: 0,
-    description: "Partagez 1 livre sur la plateforme",
-    features: [
-      "Mandafo boky 1",
-      "Dashboard mpivarotra"
+    descriptionKey: "plan_1_book_desc", // Clé de traduction
+    featuresKeys: [
+      "feature_1_book",
+      "feature_dashboard"
     ],
-    buttonText: "Safidio maimaimpoana",
-    buttoncolor: "bg-gray-700 hover:bg-gray-800"
+    buttonTextKey: "btn_choose_free",
+    buttonColor: "bg-gray-700 hover:bg-gray-800"
   },
   TWENTY_BOOKS: {
-    name: "20 Boky",
+    id: "TWENTY_BOOKS",
+    nameKey: "plan_20_books",
     price: 25000,
     maxBooks: 20,
-    description: "Partagez jusqu'à 20 livres sur la plateforme",
-    buttonText: "Mandoa amin'ny stripe",
-    buttoncolor: "bg-red-600 hover:bg-red-700"
+    descriptionKey: "plan_20_books_desc",
+    buttonTextKey: "btn_pay_stripe",
+    buttonColor: "bg-red-600 hover:bg-red-700"
   },
   UNLIMITED: {
-    name: "Illimité",
+    id: "UNLIMITED",
+    nameKey: "plan_unlimited",
     price: 50000,
     maxBooks: Infinity,
-    description: "Partagez un nombre illimité de livres",
-    buttonText: "Mandoa amin'ny stripe",
-    buttoncolor: "bg-red-600 hover:bg-red-700"
-    
+    descriptionKey: "plan_unlimited_desc",
+    buttonTextKey: "btn_pay_stripe",
+    buttonColor: "bg-red-600 hover:bg-red-700"
   },
 } as const;
 

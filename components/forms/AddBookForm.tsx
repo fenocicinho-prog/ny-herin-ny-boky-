@@ -5,21 +5,41 @@ import { useRouter } from "next/navigation";
 import { Check, Upload } from "lucide-react";
 import { UploadButton } from "@/lib/uploadthing";
 import { addBookAction } from "@/app/actions/books";
-import { CATEGORY_LIST, CATEGORY_LABELS } from "@/lib/constants";
+import { CATEGORY_LIST } from "@/lib/constants";
 import { useLanguage } from "@/lib/LanguageContext";
+
+type FormState = {
+  error?: string;
+  redirect?: string;
+} | null;
+
+const COMMISSION_RATE = 0.10;
 
 export function AddBookForm() {
   const { t } = useLanguage();
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState("");
-  const [state, formAction, pending] = useActionState(
-    async (_prev: { error?: string; redirect?: string } | null, formData: FormData) => {
+  const [buyPrice, setBuyPrice] = useState<number>(0);
+  const [rentPrice, setRentPrice] = useState<number>(0);
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    async (prev, formData: FormData) => {
       if (imageUrl) formData.set("imageUrl", imageUrl);
       const result = await addBookAction(formData);
       return result ?? null;
     },
     null
   );
+  useEffect(() => {
+    // 3. Maintenant TypeScript sait que state peut avoir .redirect
+    if (state?.redirect) {
+      router.push(state.redirect);
+    }
+  }, [state, router]);
+
+  const buyCommission = buyPrice * COMMISSION_RATE;
+  const buyGain = buyPrice - buyCommission;
+  const rentCommission = rentPrice * COMMISSION_RATE;
+  const rentGain = rentPrice - rentCommission;
 
   return (
     <form action={formAction} className="space-y-4">
@@ -28,7 +48,7 @@ export function AddBookForm() {
           {t("book.title")}
         </label>
         <input
-          name="name"
+          name="title"
           required
           placeholder={t("book.titlePlaceholder")}
           className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
@@ -56,8 +76,15 @@ export function AddBookForm() {
             name="buyPrice"
             type="number"
             min={0}
+            onChange={(e) => setBuyPrice(Number(e.target.value))}
             className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
           />
+          {buyPrice > 0 && (
+            <div className="mt-2 text-xs text-stone-500 bg-stone-50 p-2 rounded">
+              <div>{t("admin.commission")}: {buyCommission.toLocaleString()} Ar</div>
+              <div className="font-bold text-green-700">Hazo: {buyGain.toLocaleString()} Ar</div>
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-stone-700">
@@ -67,8 +94,15 @@ export function AddBookForm() {
             name="rentPrice"
             type="number"
             min={0}
+            onChange={(e) => setRentPrice(Number(e.target.value))}
             className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
           />
+          {rentPrice > 0 && (
+            <div className="mt-2 text-xs text-stone-500 bg-stone-50 p-2 rounded">
+              <div>{t("admin.commission")}: {rentCommission.toLocaleString()} Ar</div>
+              <div className="font-bold text-green-700">Hazo: {rentGain.toLocaleString()} Ar</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -83,7 +117,7 @@ export function AddBookForm() {
         >
           {CATEGORY_LIST.map((cat) => (
             <option key={cat} value={cat}>
-              {CATEGORY_LABELS[cat]}
+              {t(`categories.${cat}`)}
             </option>
           ))}
         </select>
@@ -131,7 +165,7 @@ export function AddBookForm() {
           )}
         </div>
       </div>
-
+      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}

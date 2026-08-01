@@ -13,7 +13,7 @@ const bookSchema = z.object({
   description: z.string().optional(),
   buyPrice: z.coerce.number().min(0).optional(),
   rentPrice: z.coerce.number().min(0).optional(),
-  category: z.enum(["SCIENCE", "MALAGASY", "LITTERATURE", "HISTOIRE", "AUTRE"]),
+  category: z.enum(["Fiction", "NonFiction", "PoésieThéatre", "LivrespourlaJeunesse", "Référence", "Autre"]),
   imageUrl: z.string().optional(),
 });
 
@@ -106,8 +106,8 @@ export async function createSubscriptionCheckoutAction(plan: "TWENTY_BOOKS" | "U
           price_data: {
             currency: "eur",
             product_data: {
-              name: `Abonnement ${planInfo.name} - NY HERIN'NY BOKY`,
-              description: planInfo.description,
+              name: `Abonnement ${planInfo.nameKey} - NY HERIN'NY BOKY`,
+              description: planInfo.descriptionKey,
             },
             unit_amount: planInfo.price,
           },
@@ -192,15 +192,25 @@ const updateBookSchema = z.object({
   buyPrice: z.coerce.number().min(0).optional(),
   rentPrice: z.coerce.number().min(0).optional(),
   description: z.string().optional(),
-  category: z.enum(["SCIENCE", "MALAGASY", "LITTERATURE", "HISTOIRE", "AUTRE"]),
+  category: z.enum(["Fiction", "NonFiction", "PoésieThéatre", "LivrespourlaJeunesse", "Référence", "Autre"]),
   imageUrl: z.string().optional(),
 });
 
-export async function updateBookAction(prevState: unknown, formData: FormData ): Promise<{ error?: string }> {
+export async function updateBookAction(
+  prevState: { error?: string; success?: boolean }, 
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  
   const bookId = formData.get('bookId') as string
   const user = await getSessionUser()
-  if (!user) throw new Error('Non connecte')
 
+  // 1. Gestion de l'authentification
+  if (!user) {
+    // Évitez throw, retournez l'erreur pour l'afficher
+    return { error: 'Non connecté' }
+  }
+
+  // 2. Validation
   const parsed = updateBookSchema.safeParse({
     title: formData.get('title'),
     buyPrice: formData.get('buyPrice'),
@@ -208,25 +218,34 @@ export async function updateBookAction(prevState: unknown, formData: FormData ):
     description: formData.get('description'),
     category: formData.get('category'),
     imageUrl: formData.get('imageUrl'),
-  });
+  })
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message || "Données invalides" };
+    return { error: parsed.error.issues[0]?.message || "Données invalides" }
   }
 
-  await prisma.book.update({
-    where: { id: bookId, vendorId: user.id },
-    data: {
-      title: parsed.data.title,
-      buyPrice: parsed.data.buyPrice,
-      rentPrice: parsed.data.rentPrice,
-      description: parsed.data.description,
-      category: parsed.data.category as BookCategory,
-      imageUrl: parsed.data.imageUrl,
-    }
-  })
-  revalidatePath('/')
-  revalidatePath('/vendeur')
-  revalidatePath('/vendeur/dashboard')
-  redirect('/vendeur/dashboard')
+  // 3. Mise à jour DB
+  try {
+    await prisma.book.update({
+      where: { id: bookId, vendorId: user.id }, // Sécurité: vérifie que le livre appartient au vendeur
+      data: {
+        title: parsed.data.title,
+        buyPrice: parsed.data.buyPrice,
+        rentPrice: parsed.data.rentPrice,
+        description: parsed.data.description,
+        category: parsed.data.category as BookCategory, // Adaptez le type si nécessaire
+        imageUrl: parsed.data.imageUrl || null,
+      }
+    })
+
+    // 4. Revalidation du cache
+    revalidatePath('/vendeur/dashboard')
+    
+    // ✅ SUCCÈS : Retournez un état, ne faites PAS de redirect ici
+    return { success: true, error: undefined }
+    
+  } catch (err) {
+    console.error(err)
+    return { error: "Erreur lors de la mise à jour" }
+  }
 }

@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { registerClientAction } from "@/app/actions/auth";
-import { REASON_OPTIONS, BOOK_TYPE_OPTIONS } from "@/lib/constants";
+import { REASON_KEYS, BOOK_TYPE_KEYS } from "@/lib/constants";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export function ClientRegisterForm() {
@@ -92,7 +92,7 @@ export function ClientRegisterForm() {
               className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
             >
               <option value="">Misafidiana...</option>
-              {REASON_OPTIONS.map((r) => (
+              {REASON_KEYS.map((r) => (
                 <option key={r} value={r}>
                   {r}
                 </option>
@@ -109,7 +109,7 @@ export function ClientRegisterForm() {
               className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
             >
               <option value="">Misafidiana...</option>
-              {BOOK_TYPE_OPTIONS.map((bt) => (
+              {BOOK_TYPE_KEYS.map((bt) => (
                 <option key={bt} value={bt}>
                   {bt}
                 </option>

@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { addBookAction } from "@/app/actions/books";
-import { ALL_CATEGORIES, CATEGORY_LABELS } from "@/lib/constants";
+import { CATEGORY_LIST } from "@/lib/constants";
+import { useLanguage } from "@/lib/LanguageContext"; // Import du contexte
 import { Header } from "@/components/ui/Header";
 import { UploadButton } from "@/lib/uploadthing";
 import { Plus, Check } from "lucide-react";
@@ -14,6 +15,8 @@ interface VendorBooksFormProps {
 
 export function VendorBooksForm({ vendorId }: VendorBooksFormProps) {
   const router = useRouter();
+  const { t } = useLanguage(); // ✅ Initialiser la traduction
+  
   const [imageUrl, setImageUrl] = useState("");
   const [addedBooks, setAddedBooks] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -29,8 +32,7 @@ export function VendorBooksForm({ vendorId }: VendorBooksFormProps) {
     startTransition(async () => {
       try {
         await addBookAction(formData);
-        // Note: Si addBookAction redirige, le code suivant ne sera pas exécuté
-        setAddedBooks((prev) => [...prev, formData.get("name") as string]);
+        setAddedBooks((prev) => [...prev, formData.get("title") as string]);
         form.reset();
         setImageUrl("");
       } catch (err) {
@@ -108,11 +110,11 @@ export function VendorBooksForm({ vendorId }: VendorBooksFormProps) {
                 required
                 className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
               >
-                {ALL_CATEGORIES.map((cat) => (
+                {CATEGORY_LIST.map((cat) => (
                   <option key={cat} value={cat}>
-                    {CATEGORY_LABELS[cat]}
+                    {t(`categories.${cat}`)}
                   </option>
-                ))}
+                  ))}
               </select>
             </div>
 

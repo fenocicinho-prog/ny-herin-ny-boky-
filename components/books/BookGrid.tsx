@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { BookOpen } from "lucide-react";
 import type { BookCategory } from "@prisma/client";
-import { CATEGORY_LABELS, formatPrice } from "@/lib/constants";
+import { formatPrice } from "@/lib/constants";
 import { BookActions } from "./BookActions";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export interface BookWithVendor {
   id: string;
@@ -25,6 +26,7 @@ interface BookGridProps {
 }
 
 export function BookGrid({ books, showActions = false }: BookGridProps) {
+    const { t } = useLanguage();
   if (books.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/50 py-16 text-center">
@@ -55,8 +57,8 @@ export function BookGrid({ books, showActions = false }: BookGridProps) {
                 <BookOpen className="h-16 w-16 text-amber-200" />
               </div>
             )}
-            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-amber-800">
-              {CATEGORY_LABELS[book.category]}
+            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-amber-800 backdrop-blur-sm">
+             {t(`categories.${book.category}`)}
             </span>
           </div>
           <div className="p-4">
@@ -75,12 +77,12 @@ export function BookGrid({ books, showActions = false }: BookGridProps) {
             <div className="mt-3 flex flex-wrap gap-2 text-sm">
               {book.buyPrice != null && book.buyPrice > 0 && (
                 <span className="rounded-lg bg-amber-100 px-2 py-1 font-medium text-amber-800">
-                  Hividy: {formatPrice(book.buyPrice)}
+                  {t("bookCard.buy")}: {formatPrice(book.buyPrice)}
                 </span>
               )}
               {book.rentPrice != null && book.rentPrice > 0 && (
                 <span className="rounded-lg bg-stone-100 px-2 py-1 font-medium text-stone-700">
-                  Hiray: {formatPrice(book.rentPrice)}
+                  {t("bookCard.borrow")}: {formatPrice(book.rentPrice)}
                 </span>
               )}
             </div>

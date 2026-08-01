@@ -1,7 +1,6 @@
 "use client";
 
 import type { BookCategory } from "@prisma/client";
-import { CATEGORY_LABELS } from "@/lib/constants";
 import { BookOpen, Store } from "lucide-react";
 import { PaymentModal } from "./PaymentModal";
 import { useState } from "react";
@@ -50,8 +49,8 @@ export function BookCard({ book, showActions = false }: BookCardProps) {
             </div>
           )}
           <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-amber-800 backdrop-blur-sm">
-            {CATEGORY_LABELS[book.category]}
-          </span>
+          {t(`categories.${book.category}`)}
+        </span>
         </div>
 
         <div className="flex flex-1 flex-col p-4">

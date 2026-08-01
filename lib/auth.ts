@@ -54,6 +54,7 @@ export async function getSessionUser() {
       subscriptionActive: true,
       subscriptionEndsAt: true,
       createdAt: true,
+      sellerPlanType: true,
     },
   });
 

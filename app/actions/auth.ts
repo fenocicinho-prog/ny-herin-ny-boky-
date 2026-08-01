@@ -3,13 +3,14 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { SubscriptionStatus } from "@prisma/client";
 import {
   createSession,
   destroySession,
   hashPassword,
   verifyPassword,
 } from "@/lib/auth";
-
+    
 const loginSchema = z.object({
   email: z.string().email("Email invalide"),
   password: z.string().min(6, "Mot de passe minimum 6 caractères"),
@@ -104,7 +105,17 @@ const vendorStep1Schema = z.object({
   postalCode: z.string().min(3, "Code postal requis"),
 });
 
+// app/actions/auth.ts
+// app/actions/auth.ts
+// app/actions/auth.ts
 export async function registerVendorStep1Action(formData: FormData) {
+  // 1. Récupération
+  const sellerPlanType = formData.get("sellerPlanType") as "COMMISSION" | "ABONNEMENT";
+  const mvolaNumber = formData.get("mvolaNumber") as string;
+
+  console.log("🔍 VALEUR REÇUE :", sellerPlanType); // Vérifiez ce log dans le terminal
+
+  // 2. Validation (inchangé)
   const parsed = vendorStep1Schema.safeParse({
     companyName: formData.get("companyName"),
     email: formData.get("email"),
@@ -125,6 +136,8 @@ export async function registerVendorStep1Action(formData: FormData) {
   }
 
   const hashed = await hashPassword(parsed.data.password);
+  
+  // 3. Création utilisateur avec le plan
   const user = await prisma.user.create({
     data: {
       email: parsed.data.email,
@@ -132,10 +145,27 @@ export async function registerVendorStep1Action(formData: FormData) {
       companyName: parsed.data.companyName || undefined,
       location: parsed.data.location || undefined,
       postalCode: parsed.data.postalCode || undefined,
+      mvolaNumber: mvolaNumber || undefined,
       role: "VENDOR",
+      sellerPlanType: sellerPlanType || "COMMISSION",
+      // Astuce : Si c'est un abonnement, on peut marquer un statut "PENDING" en attendant Stripe
+      subscriptionStatus: sellerPlanType === "ABONNEMENT" 
+      ? SubscriptionStatus.PENDING 
+      : SubscriptionStatus.ACTIVE,
     },
   });
 
   await createSession(user.id);
-  redirect("/inscription/vendeur/abonnement");
-}
+  
+  // 4. Redirection conditionnelle
+  if (sellerPlanType === "ABONNEMENT") {
+    // Comme Stripe n'est pas prêt, on redirige aussi vers les livres pour l'instant
+    // Mais vous pourrez changer cette ligne plus tard vers "/inscription/vendeur/abonnement"
+    console.log("➡️ Choix Abonnement (Stripe en attente) - Redirection vers Livres");
+    redirect("/inscription/vendeur/livres");
+  } else {
+    // Choix Commission
+    console.log("➡️ Choix Commission - Redirection vers Livres");
+    redirect("/inscription/vendeur/livres");
+  }
+}   

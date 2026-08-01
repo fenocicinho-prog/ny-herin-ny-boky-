@@ -206,7 +206,7 @@ export async function goToMvolaProof(orderId: string) {
   redirect(`/client/paiement-mvola/${order.id}`);
 }
 
-export function confirmMobilePaymentFormAction(formData: FormData) {
+export async function confirmMobilePaymentFormAction(formData: FormData) {
   const orderId = formData.get("orderId") as string;
   // ✅ Cette fonction est maintenant un simple redirect vers la preuve MVola
   goToMvolaProof(orderId);

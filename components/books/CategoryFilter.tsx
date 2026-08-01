@@ -2,7 +2,7 @@
 
 import type { BookCategory } from "@prisma/client";
 import Link from "next/link";
-import { CATEGORY_LABELS, CATEGORY_LIST } from "@/lib/constants";
+import { CATEGORY_LIST } from "@/lib/constants";
 import { useLanguage } from "@/lib/LanguageContext";
 
 interface CategoryFilterProps {
@@ -17,7 +17,6 @@ export function CategoryFilter({
   searchQuery = "",
 }: CategoryFilterProps) {
   const { t } = useLanguage();
-
   const buildHref = (category: string) => {
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
@@ -26,13 +25,17 @@ export function CategoryFilter({
     return `${basePath}${qs ? `?${qs}` : ""}`;
   };
 
-  const categories: { value: string; label: string }[] = [
-    { value: "ALL", label: t("search.all") },
-    ...CATEGORY_LIST.map((c: BookCategory) => ({
-      value: c,
-      label: CATEGORY_LABELS[c],
-    })),
-  ];
+// Supposons que CATEGORY_LIST contient les clés brutes : ["Fiction", "NonFiction", ...]
+const categories: { value: string; label: string }[] = [
+  { value: "ALL", label: t("search.all") },
+  
+  // Correction : Appel de t() directement ici
+  ...CATEGORY_LIST.map((c: BookCategory) => ({
+    value: c,
+    // Construit la clé dynamique et la traduit immédiatement
+    label: t(`categories.${c}`), 
+  })),
+];   
 
   return (
     <div className="flex flex-wrap gap-2">
