@@ -23,7 +23,7 @@ function calculerCommission(prix: number): number {
   return Math.round(prix * 0.05)
 }
 
-export async function createOrderAction(formData: FormData) {
+export async function createOrderAction(formData: FormData): Promise<{ error?: string; message?: string }> {
   const user = await requireAuth("CLIENT");
 
   const parsed = orderSchema.safeParse({

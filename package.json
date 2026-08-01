@@ -19,15 +19,16 @@
     "lib": "lib"
   },
   "scripts": {
-    "dev": "next dev --webpack",
-    "stripe": "stripe listen --forward-to localhost:3000/api/webhooks/stripe",
+    "dev": "npx next dev --webpack",
+    "stripe": "npx stripe listen --forward-to localhost:3000/api/webhooks/stripe",
     "start-all": "concurrently \"npm run dev\" \"npm run stripe\"",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "eslint",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "build": "npx prisma generate && npx prisma db push && npx next build",
+    "start": "npx next start",
+    "lint": "npx eslint .",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:deploy": "npx prisma migrate deploy",
+    "db:seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
