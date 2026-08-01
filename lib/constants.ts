@@ -28,6 +28,9 @@ export const BOOK_TYPE_KEYS = [
 // 4. Clé pour le nom du site
 export const SITE_NAME = "Ny herin'ny boky";
 
+// Nom de l'application — alias attendu par plusieurs composants
+export const APP_NAME = SITE_NAME;
+
 // 5. Constantes techniques (inchangées)
 export const MOBILE_MONEY_PHONE =
   process.env.NEXT_PUBLIC_MOBILE_MONEY_PHONE ||
