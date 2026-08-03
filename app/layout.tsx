@@ -6,8 +6,7 @@ import { LanguageProvider } from "@/lib/LanguageContext";
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Tsena boky Malagasy`,
-  description:
-    "Plateforme malagasy de vente et location de livres — mividy sy mihiratra boky",
+  description: "marketplace de vente et de location des livres à Madagascar",
   icons: {
     icon: "/icon.jpg",
   },
