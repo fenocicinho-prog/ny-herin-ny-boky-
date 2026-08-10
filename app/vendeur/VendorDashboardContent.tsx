@@ -36,6 +36,7 @@ interface BookWithVendor {
 
   // ✅ CORRECTION : Définissez uniquement les champs que vous avez demandés dans le 'select'
   vendor: {
+    id: string;
     companyName: string | null;
     location: string | null;
   };
