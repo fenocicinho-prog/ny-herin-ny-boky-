@@ -34,7 +34,7 @@ export function Header({ user }: HeaderProps) {
               sizes="40px"
             />
           </div>
-          <span className="hidden text-xl font-bold text-amber-900 sm:inline-block" translate="no">
+          <span className="hidden text-xl font-heading font-bold text-amber-900 sm:inline-block" translate="no">
             Ny herin'ny boky
           </span>
         </Link>
