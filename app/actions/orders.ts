@@ -236,7 +236,7 @@ export async function searchBooksAction(query: string, category?: string) {
     where,
     include: {
       vendor: {
-        select: { companyName: true, location: true },
+        select: { id: true, companyName: true, location: true },
       },
       orderItems: {
         include: {

@@ -30,7 +30,7 @@ export function BookActions({ book }: BookActionsProps) {
     setError("");
   };
 
-  const handleAddToCart = (type: "BUY" | "BORROW") => {
+const handleAddToCart = (type: "BUY" | "BORROW") => {
     const price = type === "BUY" ? book.buyPrice : book.rentPrice;
     if (price === null || price === undefined) {
       setError("Prix non disponible");
@@ -43,15 +43,15 @@ export function BookActions({ book }: BookActionsProps) {
       price,
       type,
       vendorId: book.vendorId,
-      vendorName: book.vendor?.companyName || "Vendeur",
+      vendorName: book.vendor.companyName || "Vendeur",
       quantity: 1,
-      imageUrl: book.imageUrl,
+      imageUrl: book.imageUrl ?? undefined,
     });
 
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

@@ -15,7 +15,9 @@ export interface BookWithVendor {
   rentPrice: number | null;
   imageUrl: string | null;
   category: BookCategory;
+  vendorId: string;
   vendor: {
+    id: string;
     companyName: string | null;
     location?: string | null;
   };
