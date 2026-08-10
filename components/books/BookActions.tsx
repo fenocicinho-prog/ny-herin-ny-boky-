@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { CreditCard, Smartphone } from "lucide-react";
+import { CreditCard, Smartphone, ShoppingCart } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orders";
+import { useCart } from "@/lib/CartContext";
 import { MOBILE_MONEY_PHONE } from "@/lib/constants";
 import { useLanguage } from "@/lib/LanguageContext";
 import type { BookWithVendor } from "./BookGrid";
@@ -12,6 +13,7 @@ interface BookActionsProps {
 
 export function BookActions({ book }: BookActionsProps) {
   const { t } = useLanguage();
+  const { addItem } = useCart();
   const [showModal, setShowModal] = useState(false);
   const [orderType, setOrderType] = useState<"BUY" | "BORROW">("BUY");
   const [paymentMethod, setPaymentMethod] = useState<"STRIPE" | "MOBILE_MONEY">(
@@ -20,11 +22,34 @@ export function BookActions({ book }: BookActionsProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const openModal = (type: "BUY" | "BORROW") => {
     setOrderType(type);
     setShowModal(true);
     setError("");
+  };
+
+  const handleAddToCart = (type: "BUY" | "BORROW") => {
+    const price = type === "BUY" ? book.buyPrice : book.rentPrice;
+    if (price === null || price === undefined) {
+      setError("Prix non disponible");
+      return;
+    }
+
+    addItem({
+      bookId: book.id,
+      title: book.title,
+      price,
+      type,
+      vendorId: book.vendorId,
+      vendorName: book.vendor?.companyName || "Vendeur",
+      quantity: 1,
+      imageUrl: book.imageUrl,
+    });
+
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,23 +88,55 @@ export function BookActions({ book }: BookActionsProps) {
 
   return (
     <>
-      <div className="mt-4 flex gap-2">
-        {book.buyPrice != null && book.buyPrice > 0 && (
-          <button
-            onClick={() => openModal("BUY")}
-            className="flex-1 rounded-lg bg-amber-700 px-3 py-2 text-sm font-medium text-white hover:bg-amber-800"
-          >
-            {t("bookCard.buy")}
-          </button>
-        )}
-        {book.rentPrice != null && book.rentPrice > 0 && (
-          <button
-            onClick={() => openModal("BORROW")}
-            className="flex-1 rounded-lg border border-amber-300 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50"
-          >
-            {t("bookCard.borrow")}
-          </button>
-        )}
+      <div className="mt-4 space-y-2">
+        <div className="flex gap-2">
+          {book.buyPrice != null && book.buyPrice > 0 && (
+            <button
+              onClick={() => openModal("BUY")}
+              className="flex-1 rounded-lg bg-amber-700 px-3 py-2 text-sm font-medium text-white hover:bg-amber-800 transition"
+            >
+              {t("bookCard.buy")}
+            </button>
+          )}
+          {book.rentPrice != null && book.rentPrice > 0 && (
+            <button
+              onClick={() => openModal("BORROW")}
+              className="flex-1 rounded-lg border border-amber-300 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-50 transition"
+            >
+              {t("bookCard.borrow")}
+            </button>
+          )}
+        </div>
+
+        {/* Boutons Ajouter au panier */}
+        <div className="flex gap-2">
+          {book.buyPrice != null && book.buyPrice > 0 && (
+            <button
+              onClick={() => handleAddToCart("BUY")}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-medium transition ${
+                addedToCart && orderType === "BUY"
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-amber-700 text-amber-700 hover:bg-amber-50"
+              }`}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {addedToCart && orderType === "BUY" ? "✓ Ajouté" : "Panier"}
+            </button>
+          )}
+          {book.rentPrice != null && book.rentPrice > 0 && (
+            <button
+              onClick={() => handleAddToCart("BORROW")}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-medium transition ${
+                addedToCart && orderType === "BORROW"
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-stone-300 text-stone-700 hover:bg-stone-50"
+              }`}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {addedToCart && orderType === "BORROW" ? "✓ Ajouté" : "Louer"}
+            </button>
+          )}
+        </div>
       </div>
 
       {showModal && (

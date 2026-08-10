@@ -1,7 +1,14 @@
 // lib/send-sale-email.ts
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+
+function getResend() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key');
+  }
+  return resend;
+}
 
 export async function sendSaleEmail({
   vendorEmail,
@@ -23,7 +30,8 @@ export async function sendSaleEmail({
   deliveryLocation?: string | null;
 }) {
   try {
-    await resend.emails.send({
+    const resendClient = getResend();
+    await resendClient.emails.send({
       // ✅ FROM : Doit être l'adresse par défaut de Resend
       from: 'onboarding@resend.dev', 
       

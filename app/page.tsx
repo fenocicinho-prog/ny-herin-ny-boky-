@@ -20,7 +20,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden px-4 py-20 sm:px-6">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-100/60 via-transparent to-transparent" />
         <div className="relative mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-amber-900 sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-amber-900 sm:text-6xl" translate="no">
             {SITE_NAME}
           </h1>
           <p className="mt-4 text-lg text-stone-600 sm:text-xl">
@@ -74,7 +74,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-amber-100 bg-white py-8 text-center text-sm text-stone-500">
-        © 2026 {SITE_NAME} — {t("home.footer.description")}
+        © 2026 <span translate="no">{SITE_NAME}</span> — {t("home.footer.description")}
       </footer>
     </div>
   );

@@ -43,7 +43,7 @@ export function SubscriptionActive({
         <div className="mb-8 rounded-2xl border border-green-200 bg-white p-8 shadow-lg">
           <div className="mb-6">
             <p className="text-sm text-stone-500">{t("profile.plan")}</p>
-            <h2 className="text-4xl font-bold text-green-700">{planInfo.name}</h2>
+            <h2 className="text-4xl font-bold text-green-700">{t(planInfo.nameKey)}</h2>
           </div>
 
           <div className="mb-8 grid gap-4 sm:grid-cols-2">
@@ -72,7 +72,7 @@ export function SubscriptionActive({
             </div>
 
             <div className="rounded-lg bg-amber-50 p-4">
-              <p className="text-sm font-semibold text-stone-600">{t("subscription.subscription")}</p>
+              <p className="text-sm font-semibold text-stone-600">{t("subscription.title")}</p>
               {expiresAt ? (
                 <>
                   <p className="mt-2 text-sm text-stone-700">{formatDate(expiresAt)}</p>
@@ -93,7 +93,7 @@ export function SubscriptionActive({
           </div>
 
           <p className="mb-6 border-t border-green-200 pt-6 text-center text-sm text-stone-600">
-            {planInfo.description}
+            {t(planInfo.descriptionKey)}
           </p>
 
           <div className="grid gap-3 sm:grid-cols-2">

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { Header } from "@/components/layout/Header";
 import { VendorCard } from "@/components/vendors/VendorCard";
 import { getVendors } from "@/app/actions/orders";
@@ -32,7 +33,7 @@ export default async function HomePage() {
       </section>
 
       <footer className="border-t border-amber-100 bg-white py-8 text-center text-sm text-stone-500">
-        © 2026 {SITE_NAME} — Tsena boky Malagasy
+        © 2026 <span translate="no">{SITE_NAME}</span> — Tsena boky Malagasy
       </footer>
     </div>
   );

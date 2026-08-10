@@ -3,13 +3,13 @@ import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { CartProvider } from "@/lib/CartContext";
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Tsena boky Malagasy`,
-  description:
-    "Plateforme malagasy de vente et location de livres — mividy sy mihiratra boky",
+  description: "marketplace de vente et de location des livres à Madagascar",
   icons: {
-    icon: "/icon.jpg",
+    icon: "/logo-ny-herin-ny-boky.png",
   },
 };
 
@@ -21,10 +21,12 @@ export default function RootLayout({
   return (
     <html lang="mg">
       <body className="min-h-full flex flex-col font-sans">
-        <LanguageProvider>
-          <LoadingScreen />
-          {children}
-        </LanguageProvider>
+        <CartProvider>
+          <LanguageProvider>
+            <LoadingScreen />
+            {children}
+          </LanguageProvider>
+        </CartProvider>
       </body>
     </html>
   );

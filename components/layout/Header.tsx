@@ -8,6 +8,7 @@ import { logoutAction } from "@/app/actions/auth";
 import type { SessionUser } from "@/lib/auth";
 import { useLanguage } from "@/lib/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { CartIcon } from "@/components/books/CartIcon";
 // Importez la clé ou la fonction de traduction, pas la constante texte
 // Si SITE_NAME est maintenant une clé dans vos traductions, utilisez-la via t()
 
@@ -33,13 +34,14 @@ export function Header({ user }: HeaderProps) {
               sizes="40px"
             />
           </div>
-          <span className="hidden text-xl font-bold text-amber-900 sm:inline-block">
+          <span className="hidden text-xl font-bold text-amber-900 sm:inline-block" translate="no">
             Ny herin'ny boky
           </span>
         </Link>
 
         <nav className="flex items-center gap-3">
           <LanguageSwitcher />
+          {user?.role === "CLIENT" && <CartIcon />}
           {user ? (
             <>
               <Link

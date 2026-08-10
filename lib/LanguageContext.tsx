@@ -41,7 +41,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   // 1. Utiliser useSyncExternalStore pour lire la langue
   // Cela remplace useState + useEffect et élimine l'avertissement
-  const lang = useSyncExternalStore(subscribe, getSnapshot, () => "mg");
+  const lang = useSyncExternalStore(subscribe, getSnapshot, () => "mg") as Lang;
 
   // 2. Fonction pour mettre à jour la langue
   const setLang = useCallback((newLang: Lang) => {
