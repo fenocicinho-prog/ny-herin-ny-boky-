@@ -34,7 +34,7 @@ export default async function VendorDashboard({
     prisma.book.findMany({
       where,
       include: {
-        vendor: { select: { companyName: true, location: true } },
+        vendor: { select: { id: true, companyName: true, location: true } }, // ← ajout id: true
         orderItems: {
           include: {
             order: { select: { id: true, paymentStatus: true } }
