@@ -26,6 +26,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Panier vide" }, { status: 400 })
     }
 
+    // ✅ VALIDATION : quantités valides (entiers positifs, plafond raisonnable)
+    const invalidQty = cart.filter(
+      (item) => !Number.isInteger(item.qty) || item.qty < 1 || item.qty > 100
+    )
+    if (invalidQty.length > 0) {
+      return NextResponse.json({ error: "Quantité invalide dans le panier" }, { status: 400 })
+    }
+
     // 3. FETCH BDD + SÉCURITÉ
     const bookIds = [...new Set(cart.map(i => i.bookId))]
     const booksFromDB = await prisma.book.findMany({ 
@@ -37,6 +45,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Un des livres n'existe plus" }, { status: 404 })
     }
 
+    // ✅ VALIDATION : tous les livres du panier doivent être disponibles à l'achat
+    const unbuyableBooks = booksFromDB.filter((b) => b.buyPrice === null || b.buyPrice <= 0)
+    if (unbuyableBooks.length > 0) {
+      return NextResponse.json(
+        { error: `"${unbuyableBooks[0].title}" n'est pas disponible à l'achat (location uniquement)` },
+        { status: 400 }
+      )
+    }
+
     // 4. RECALCUL TOTAL + COMMISSIONS
     let realTotal = 0
     let totalPlatformFee = 0
@@ -46,7 +63,8 @@ export async function POST(req: NextRequest) {
       const book = booksFromDB.find(b => b.id === item.bookId)
       if (!book) continue
 
-      const itemSubtotal = (book.buyPrice ?? 0) * item.qty
+      // book.buyPrice est garanti non-null et > 0 grâce à la validation ci-dessus
+      const itemSubtotal = book.buyPrice! * item.qty
       const itemCommission = calculerCommission(itemSubtotal)
 
       realTotal += itemSubtotal
@@ -56,11 +74,22 @@ export async function POST(req: NextRequest) {
         bookId: book.id,
         sellerId: book.vendorId,
         quantity: item.qty,
-        price: book.buyPrice ?? 0,
+        price: book.buyPrice!,
       })
     }
 
     const vendorPaymentAmount = realTotal - totalPlatformFee
+
+    // ✅ VALIDATION : le numéro marchand MVola doit être configuré, sinon on bloque
+    // plutôt que d'envoyer le client vers un numéro fictif
+    const sellerMvolaNumber = process.env.MVOLA_MERCHANT_NUMBER
+    if (!sellerMvolaNumber) {
+      console.error("MVOLA_MERCHANT_NUMBER non configuré dans les variables d'environnement")
+      return NextResponse.json(
+        { error: "Paiement Mobile Money temporairement indisponible" },
+        { status: 503 }
+      )
+    }
 
     // 5. CRÉATION COMMANDE
     const clientTrxRef = `MB-${Date.now()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
@@ -87,8 +116,6 @@ export async function POST(req: NextRequest) {
     })
 
     // 6. RETOUR FRONT
-    const sellerMvolaNumber = process.env.MVOLA_MERCHANT_NUMBER || "0320000000"
-
     return NextResponse.json({ 
       success: true, 
       orderId: order.id,
