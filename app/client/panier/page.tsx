@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
@@ -8,13 +9,15 @@ import { Header } from '@/components/layout/Header';
 import { useCart } from '@/lib/CartContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { formatPrice } from '@/lib/constants';
-import { useSession } from 'next-auth/react';
+import { useSessionUser } from '@/lib/useSessionUser';
+import { redirectTo } from '@/lib/redirect';
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, removeItem, updateQuantity, clearCart, getTotalPrice, getGroupedByVendor } =
     useCart();
   const { t } = useLanguage();
-  const { data: session } = useSession();
+  const { user, isLoading: sessionLoading } = useSessionUser();
   const [isLoading, setIsLoading] = useState(false);
 
   const total = getTotalPrice();
@@ -22,8 +25,8 @@ export default function CartPage() {
   const vendorCount = Object.keys(groupedByVendor).length;
 
   const handleCheckout = async () => {
-    if (!session?.user?.id) {
-      window.location.href = '/connexion';
+    if (!user?.id) {
+      router.push('/connexion');
       return;
     }
 
@@ -50,23 +53,22 @@ export default function CartPage() {
       const data = await response.json();
 
       if (data.error) {
-        alert('Erreur: ' + data.error);
+        alert(t('cart_error_prefix') + data.error);
         setIsLoading(false);
         return;
       }
 
-      // Rediriger vers Stripe checkout ou page de paiement MVola
       if (data.stripeUrl) {
-        window.location.href = data.stripeUrl;
+        redirectTo(data.stripeUrl);
       } else if (data.mvolaUrl) {
-        window.location.href = data.mvolaUrl;
+        redirectTo(data.mvolaUrl);
       } else {
-        alert('Erreur checkout');
+        alert(t('cart_error_checkout'));
         setIsLoading(false);
       }
     } catch (error) {
       console.error('Erreur checkout:', error);
-      alert('Erreur lors du paiement');
+      alert(t('cart_error_payment'));
       setIsLoading(false);
     }
   };
@@ -74,17 +76,17 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-stone-50">
-        <Header user={session?.user} />
+        <Header user={user} />
         <div className="mx-auto max-w-4xl px-4 py-12">
           <div className="rounded-xl border-2 border-dashed border-amber-200 bg-amber-50 py-12 text-center">
             <ShoppingBag className="mx-auto h-16 w-16 text-amber-300" />
-            <h1 className="mt-4 text-2xl font-bold text-stone-900">Panier vide</h1>
-            <p className="mt-2 text-stone-600">Découvrez notre sélection de livres</p>
+            <h1 className="mt-4 text-2xl font-bold text-stone-900">{t('cart_empty_title')}</h1>
+            <p className="mt-2 text-stone-600">{t('cart_empty_subtitle')}</p>
             <Link
               href="/client"
               className="mt-6 inline-block rounded-lg bg-amber-700 px-6 py-3 font-medium text-white hover:bg-amber-800"
             >
-              Continuer les achats
+              {t('cart_continue_shopping')}
             </Link>
           </div>
         </div>
@@ -94,10 +96,10 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <Header user={session?.user} />
+      <Header user={user} />
 
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <h1 className="mb-8 text-3xl font-bold text-stone-900">Panier d'achat</h1>
+        <h1 className="mb-8 text-3xl font-bold text-stone-900">{t('cart_title')}</h1>
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Produits */}
@@ -128,7 +130,7 @@ export default function CartPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-stone-900">{item.title}</h3>
                           <p className="text-sm text-stone-500">
-                            {item.type === 'BUY' ? 'Achat' : 'Location'}
+                            {item.type === 'BUY' ? t('cart_type_buy') : t('cart_type_rent')}
                           </p>
                           <p className="mt-2 font-semibold text-amber-700">
                             {formatPrice(item.price)}
@@ -179,7 +181,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="mt-4 flex justify-between text-right">
-                    <span className="text-stone-600">Sous-total vendeur:</span>
+                    <span className="text-stone-600">{t('cart_seller_subtotal')}</span>
                     <span className="font-semibold text-stone-900">
                       {formatPrice(vendorTotal)}
                     </span>
@@ -191,43 +193,43 @@ export default function CartPage() {
 
           {/* Résumé de commande */}
           <div className="h-fit rounded-lg border border-amber-200 bg-white p-6 sticky top-20">
-            <h2 className="mb-6 text-lg font-semibold text-stone-900">Résumé</h2>
+            <h2 className="mb-6 text-lg font-semibold text-stone-900">{t('cart_summary')}</h2>
 
             <div className="space-y-3 border-b border-stone-200 pb-4 mb-4">
               <div className="flex justify-between text-sm text-stone-600">
-                <span>{items.length} article(s)</span>
+                <span>{items.length} {t('cart_items_label')}</span>
                 <span>{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between text-sm text-stone-600">
-                <span>{vendorCount} vendeur(s)</span>
+                <span>{vendorCount} {t('cart_sellers_label')}</span>
               </div>
             </div>
 
             <div className="mb-6 flex justify-between">
-              <span className="text-lg font-semibold text-stone-900">Total:</span>
+              <span className="text-lg font-semibold text-stone-900">{t('cart_total')}</span>
               <span className="text-2xl font-bold text-amber-700">{formatPrice(total)}</span>
             </div>
 
             <button
               onClick={handleCheckout}
-              disabled={isLoading || items.length === 0}
+              disabled={isLoading || sessionLoading || items.length === 0}
               className="w-full rounded-lg bg-amber-700 px-4 py-3 font-medium text-white hover:bg-amber-800 disabled:opacity-50 transition"
             >
-              {isLoading ? 'Traitement...' : 'Procéder au paiement'}
+              {isLoading ? t('cart_checkout_processing') : t('cart_checkout_btn')}
             </button>
 
             <button
               onClick={clearCart}
               className="mt-3 w-full rounded-lg border border-stone-300 px-4 py-2 font-medium text-stone-700 hover:bg-stone-50 transition"
             >
-              Vider le panier
+              {t('cart_clear_btn')}
             </button>
 
             <Link
               href="/client"
               className="mt-4 block text-center text-sm text-amber-700 hover:text-amber-800 underline"
             >
-              Continuer les achats
+              {t('cart_continue_shopping')}
             </Link>
           </div>
         </div>

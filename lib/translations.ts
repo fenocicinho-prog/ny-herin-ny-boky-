@@ -340,6 +340,24 @@ export const translations = {
   "success.orderCreated": "Kaomandy noforonina!",
   "success.subscriptionActive": "Drafitra mavitrika!",
   "common.back": "Miverina",
+  // ===== PANIER =====
+  cart_title: "Kitapom-bidiny",
+  cart_empty_title: "Foana ny kitapo",
+  cart_empty_subtitle: "Hitady boky eto amin'ny tranonkala",
+  cart_continue_shopping: "Hanohy ny fividianana",
+  cart_type_buy: "Fividianana",
+  cart_type_rent: "Fanofana",
+  cart_seller_subtotal: "Antontan'isa mpivarotra:",
+  cart_summary: "Famintinana",
+  cart_items_label: "entana",
+  cart_sellers_label: "mpivarotra",
+  cart_total: "Fitambarany:",
+  cart_checkout_btn: "Handoa",
+  cart_checkout_processing: "Eo am-panatanterahana...",
+  cart_clear_btn: "Hesorina ny kitapo",
+  cart_error_prefix: "Hadisoana: ",
+  cart_error_checkout: "Hadisoana amin'ny fandoavana",
+  cart_error_payment: "Hadisoana teo am-panefana",
 } as const;
 
 export type TranslationKey = keyof typeof translations;
