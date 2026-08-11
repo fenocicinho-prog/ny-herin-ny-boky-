@@ -5,13 +5,21 @@
   --foreground: #1c1917;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme inline{
+  --color-amber-50: #FBF0EE;
+  --color-amber-100: #F3D6D2;
+  --color-amber-200: #E4A8A0;
+  --color-amber-300: #CE6E63;
+  --color-amber-400: #D19A28;
+  --color-amber-500: #B8841F;
+  --color-amber-600: #8A1F24;
+  --color-amber-700: #6B1423;
+  --color-amber-800: #56101C;
+  --color-amber-900: #400B15;
 
+  --font-sans: var(--font-body), sans-serif;
+  --font-heading: var(--font-heading), serif;
+}
 body {
   background: var(--background);
   color: var(--foreground);

@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { getVendorStats } from "@/app/actions/orders";
 import { prisma } from "@/lib/prisma";
 import VendorDashboardContent from "./VendorDashboardContent";
+import { redirect } from "next/navigation";
 
 export default async function VendorDashboard({
   searchParams,
@@ -13,7 +14,9 @@ export default async function VendorDashboard({
   searchParams: Promise<{ q?: string; category?: string }>;
 }) {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user || user.role !== 'VENDOR') {
+      redirect('/inscription/vendeur');
+    }
 
   const params = await searchParams;
   const query = params.q || "";

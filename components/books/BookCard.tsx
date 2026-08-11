@@ -53,7 +53,7 @@ export function BookCard({ book, showActions = false }: BookCardProps) {
         </span>
         </div>
 
-        <div className="flex flex-1 flex-col p-4">
+        <div className="flex flex-1 flex-col p-4" translate="no">
           <h3 className="font-semibold text-stone-900 line-clamp-2">{book.title}</h3>
 
           {book.vendor?.companyName && (

@@ -29,7 +29,7 @@ export function VendorSidebar({
           <Store className="h-7 w-7" />
         </div>
         <div>
-          <h2 className="font-semibold text-stone-900">{companyName}</h2>
+          <h2 className="font-semibold text-stone-900" translate="no">{companyName}</h2>
           <p className="text-sm text-stone-500">{email}</p>
         </div>
       </div>

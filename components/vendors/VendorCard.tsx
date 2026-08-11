@@ -22,7 +22,7 @@ export function VendorCard({
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-amber-100">
         <BookOpen className="h-7 w-7 text-amber-700" />
       </div>
-      <h3 className="font-semibold text-stone-900">
+      <h3 className="font-semibold text-stone-900" translate="no">
         {companyName || t("nav.vendor")}
       </h3>
       {location && (

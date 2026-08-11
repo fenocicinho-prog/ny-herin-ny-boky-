@@ -15,13 +15,23 @@ export const translationsFr: Record<string, string> = {
   
   plan_unlimited: "Illimité",
   plan_unlimited_desc: "Partagez un nombre illimité de livres",
-  
+
+  home_no_books: "Aucun livre pour le moment",
+  home_no_vendors: "Aucun vendeur pour le moment",
+  "choix": "choisissez ...",
   "site.name": "La force du livre",
-  "categories.Fiction": "Histoires imaginaires (Romans, Nouvelles)",
-  "categories.NonFiction": "réels, savoirs, biographies",
-  "categories.PoésieThéatre": "oeuvres en vers ou destinées à la scène",
-  "categories.LivrespourlaJeunesse": "Albums, contes, jeunes adultes (YA)",
-  "categories.Autre": "Autre",
+  // translate-fr.ts
+  "categories.BUSINESS_ENTREPRENEURIAT": "Business & Entrepreneuriat",
+  "categories.DEVELOPPEMENT_PERSONNEL": "Développement personnel",
+  "categories.PSYCHOLOGIE": "Psychologie",
+  "categories.FINANCE_INVESTISSEMENT": "Finance & Investissement",
+  "categories.MARKETING_VENTE": "Marketing & Vente",
+  "categories.COMMUNICATION_LEADERSHIP": "Communication & Leadership",
+  "categories.BOKY_MALAGASY": "Boky Malagasy",
+  "categories.SCIENCE_TECHNOLOGIE": "Science & Technologie",
+  "categories.ROMANS": "Romans",
+  "categories.THRILLER_SUSPENSE": "Thriller & Suspense",
+  "categories.AUTRE": "Autre",
   "reasons.study": "Apprendre et respecter les livres",
   "reasons.search_mg": "Chercher des livres malgaches",
   "reasons.leisure": "Lire pour le plaisir",
@@ -51,7 +61,7 @@ export const translationsFr: Record<string, string> = {
 
   // PAGE D'ACCUEIL
   "home.hero.title": "La force des livres",
-  "home.hero.subtitle": "Marketplace de vente et location de livres malgaches",
+  "home.hero.subtitle": "Marketplace de vente et location de livres, et aussi pour acheter n'importe quelles livres",
   "home.hero.description": "Achetez et louez des livres. Préservez le savoir à travers les livres.",
   "home.hero.ctaBuy": "Acheter des livres",
   "home.hero.ctaSell": "Vendre des livres",

@@ -91,10 +91,10 @@ export function ClientRegisterForm() {
               required
               className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
             >
-              <option value="">Misafidiana...</option>
+              <option value="">{t("choix")}</option>
               {REASON_KEYS.map((r) => (
                 <option key={r} value={r}>
-                  {r}
+                  {t(r)}
                 </option>
               ))}
             </select>
@@ -108,10 +108,10 @@ export function ClientRegisterForm() {
               required
               className="mt-1 w-full rounded-lg border border-stone-200 px-4 py-2.5 focus:border-amber-400 focus:outline-none"
             >
-              <option value="">Misafidiana...</option>
+              <option value="">{t("choix")}</option>
               {BOOK_TYPE_KEYS.map((bt) => (
                 <option key={bt} value={bt}>
-                  {bt}
+                  {t(bt)}
                 </option>
               ))}
             </select>

@@ -16,10 +16,10 @@ export function ClientProfile({ user }: ClientProfileProps) {
   return (
     <aside className="w-full shrink-0 lg:w-64">
       <div className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-2xl font-bold text-amber-800">
+        <div translate="no" className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-2xl font-bold text-amber-800">
           {user.firstName?.[0]?.toUpperCase() || "C"}
         </div>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-stone-900" translate="no">
           {user.firstName} {user.lastName}
         </h2>
         <p className="text-sm text-stone-500">

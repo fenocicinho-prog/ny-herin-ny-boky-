@@ -3,7 +3,7 @@ import type { BookCategory } from "@prisma/client";
 
 // 1. Liste brute des catégories (pour les boucles et la logique)
 export const CATEGORY_LIST: BookCategory[] = [
-  "Fiction", "NonFiction", "PoésieThéatre", "LivrespourlaJeunesse", "Référence", "Autre"
+  "BUSINESS_ENTREPRENEURIAT", "DEVELOPPEMENT_PERSONNEL", "PSYCHOLOGIE", "FINANCE_INVESTISSEMENT", "MARKETING_VENTE", "COMMUNICATION_LEADERSHIP", "BOKY_MALAGASY", "SCIENCE_TECHNOLOGIE", "ROMANS", "THRILLER_SUSPENSE", "AUTRE"
 ];
 
 // 2. Clés de traduction pour les raisons (pas de texte en dur)

@@ -50,13 +50,13 @@ export function Header({ user }: HeaderProps) {
               >
                 {user.role === "VENDOR" ? (
                   // Affichage Vendeur
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1" translate="no">
                     <UserCircle className="h-4 w-4" />
                     {user.companyName || t("nav.vendor")}
                   </span>
                 ) : (
                   // Affichage Client
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1" translate="no">
                     <UserCircle className="h-4 w-4" />
                     {/* Correction : Affiche Prénom + Nom ou "Profil" */}
                     {user.firstName || user.email.split('@')[0]} 

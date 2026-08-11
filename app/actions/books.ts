@@ -13,7 +13,7 @@ const bookSchema = z.object({
   description: z.string().optional(),
   buyPrice: z.coerce.number().min(0).optional(),
   rentPrice: z.coerce.number().min(0).optional(),
-  category: z.enum(["Fiction", "NonFiction", "PoésieThéatre", "LivrespourlaJeunesse", "Référence", "Autre"]),
+  category: z.enum(["BUSINESS_ENTREPRENEURIAT", "DEVELOPPEMENT_PERSONNEL", "PSYCHOLOGIE", "FINANCE_INVESTISSEMENT", "MARKETING_VENTE", "COMMUNICATION_LEADERSHIP", "BOKY_MALAGASY", "SCIENCE_TECHNOLOGIE", "ROMANS", "THRILLER_SUSPENSE", "AUTRE"]),
   imageUrl: z.string().optional(),
 });
 
@@ -192,7 +192,7 @@ const updateBookSchema = z.object({
   buyPrice: z.coerce.number().min(0).optional(),
   rentPrice: z.coerce.number().min(0).optional(),
   description: z.string().optional(),
-  category: z.enum(["Fiction", "NonFiction", "PoésieThéatre", "LivrespourlaJeunesse", "Référence", "Autre"]),
+  category: z.enum(["BUSINESS_ENTREPRENEURIAT", "DEVELOPPEMENT_PERSONNEL", "PSYCHOLOGIE", "FINANCE_INVESTISSEMENT", "MARKETING_VENTE", "COMMUNICATION_LEADERSHIP", "BOKY_MALAGASY", "SCIENCE_TECHNOLOGIE", "ROMANS", "THRILLER_SUSPENSE", "AUTRE"]),
   imageUrl: z.string().optional(),
 });
 

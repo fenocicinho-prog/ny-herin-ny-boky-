@@ -19,13 +19,23 @@ export const translations = {
   plan_unlimited: "Illimité",
   plan_unlimited_desc: "Mizara boky tsy voafetra",
 
+  
+  home_no_books: "Tsy misy boky hita amin'izao fotoana izao",
+  home_no_vendors: "Tsy misy mpivarotra hita amin'izao fotoana izao",
+  "choix": "Misafidiana ...",
   "site.name": "Ny herin'ny boky",
-  "categories.Fiction": "Tantara noforonina (tantara lava, tantara fohy)",
-  "categories.NonFiction": "Tantara marina, asa mifototra amin'ny zava-nisy, tantaram-piainana",
-  "categories.PoésieThéatre": "Asa an-tononkalo na natao ho an'ny sehatra",
-  "categories.LivrespourlaJeunesse": "Boky misy sary, angano, tantara foronina ho an'ny tanora (YA)",
-  "categories.Référence": "Rakibolana, rakipahalalana, atlasy",
-  "categories.Autre": "Hafa",
+  // translate.ts (malgache — à toi d'ajuster les termes, je propose une base)
+  "categories.BUSINESS_ENTREPRENEURIAT": "Orinasa sy Fandraharahana",
+  "categories.DEVELOPPEMENT_PERSONNEL": "Fivoarana manokana",
+  "categories.PSYCHOLOGIE": "Psikolojia",
+  "categories.FINANCE_INVESTISSEMENT": "Vola sy Fampiasam-bola",
+  "categories.MARKETING_VENTE": "Marketing sy Varotra",
+  "categories.COMMUNICATION_LEADERSHIP": "Fifandraisana sy Fitarihana",
+  "categories.BOKY_MALAGASY": "Boky Malagasy",
+  "categories.SCIENCE_TECHNOLOGIE": "Siansa sy Teknolojia",
+  "categories.ROMANS": "Tantara",
+  "categories.THRILLER_SUSPENSE": "Tantara mampihoron-koditra",
+  "categories.AUTRE": "Hafa",
   "reasons.study": "Mianatra sy mankafy boky",
   "reasons.search_mg": "Mitady boky malagasy",
   "reasons.leisure": "Mamaky amin'ny fialamboly",
@@ -55,7 +65,7 @@ export const translations = {
 
   // ===== PAGE D'ACCUEIL =====
   "home.hero.title": "Ny herin'ny boky",
-  "home.hero.subtitle": "Trano fivarotana sy fanofana boky Malagasy",
+  "home.hero.subtitle": "Trano fivarotana sy fanofana boky, Ary ahitana ireo boky maro isan-karazany",
   "home.hero.description": "Fividianana sy fanofana boky. Mitandro ny fahalalana amin'ny alalan'ny boky.",
   "home.hero.ctaBuy": "Hividy boky",
   "home.hero.ctaSell": "Hividy boky",
