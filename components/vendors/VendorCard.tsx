@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { MapPin, BookOpen } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 
@@ -11,6 +12,7 @@ interface VendorCardProps {
 }
 
 export function VendorCard({
+  id,
   companyName,
   location,
   bookCount,
@@ -18,7 +20,10 @@ export function VendorCard({
   const { t } = useLanguage();
 
   return (
-    <div className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm transition hover:shadow-md">
+    <Link
+      href={`/vendeur/${id}`}
+      className="block rounded-2xl border border-amber-100 bg-white p-6 shadow-sm transition hover:shadow-md"
+    >
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-amber-100">
         <BookOpen className="h-7 w-7 text-amber-700" />
       </div>
@@ -26,7 +31,7 @@ export function VendorCard({
         {companyName || t("nav.vendor")}
       </h3>
       {location && (
-        <p className="mt-1 flex items-center gap-1 text-sm text-stone-500">
+        <p className="mt-1 flex items-center gap-1 text-sm text-stone-500" translate="no">
           <MapPin className="h-3.5 w-3.5" />
           {location}
         </p>
@@ -34,6 +39,6 @@ export function VendorCard({
       <p className="mt-3 text-sm font-medium text-amber-700">
         {bookCount} {t("book.title")}
       </p>
-    </div>
+    </Link>
   );
 }

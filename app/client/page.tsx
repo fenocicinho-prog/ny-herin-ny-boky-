@@ -7,6 +7,7 @@ import { BookGrid } from "@/components/books/BookGrid";
 import { DeliveryAlerts } from "@/components/orders/DeliveryAlerts";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 
 export default async function ClientDashboard({
   searchParams,
@@ -14,7 +15,9 @@ export default async function ClientDashboard({
   searchParams: Promise<{ q?: string; category?: string; success?: string; payment?: string }>;
 }) {
   const user = await getSessionUser();
-  if (!user) return null;
+  if (!user || user.role !== 'VENDOR') {
+        redirect('/inscription/vendeur');
+      }
 
   const params = await searchParams;
   const query = params.q || "";

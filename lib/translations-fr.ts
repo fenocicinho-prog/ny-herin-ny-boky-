@@ -61,7 +61,7 @@ export const translationsFr: Record<string, string> = {
 
   // PAGE D'ACCUEIL
   "home.hero.title": "La force des livres",
-  "home.hero.subtitle": "Marketplace de vente et location de livres, et aussi pour acheter n'importe quelles livres",
+  "home.hero.subtitle": "Marketplace de vente et location de livres, et aussi pour acheter n'importe quelles livres, facile a utilisé et très racurant grace au communication direct aux clients et aux vendeurs",
   "home.hero.description": "Achetez et louez des livres. Préservez le savoir à travers les livres.",
   "home.hero.ctaBuy": "Acheter des livres",
   "home.hero.ctaSell": "Vendre des livres",

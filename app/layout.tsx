@@ -19,12 +19,26 @@ const manrope = Manrope({
   weight: ["400", "500", "600"],
 });
 
-
 export const metadata: Metadata = {
-  title: `${SITE_NAME} — Tsena boky Malagasy`,
-  description: "marketplace de vente et de location des livres à Madagascar",
+  metadataBase: new URL("https://ny-erin-ny-boky.com"), // ⚠️ mets ton vrai domaine ici
+  title: {
+    default: `${SITE_NAME} — Tsena boky Malagasy`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: "Marketplace de vente et de location de livres à Madagascar. Achetez et louez des livres en ligne : business, développement personnel, romans, boky malagasy et plus.",
+  keywords: ["livre", "boky", "book", "librairie Madagascar", "location livre", "achat livre en ligne", "tsena boky"],
   icons: {
     icon: "/logo-ny-herin-ny-boky.png",
+  },
+  openGraph: {
+    title: `${SITE_NAME} — Tsena boky Malagasy`,
+    description: "Marketplace de vente et de location de livres à Madagascar",
+    locale: "fr_MG",
+    type: "website",
+    siteName: SITE_NAME,
+  },
+  other: {
+    google: "notranslate",
   },
 };
 
