@@ -18,6 +18,28 @@ export const translationsFr: Record<string, string> = {
 
   home_no_books: "Aucun livre pour le moment",
   home_no_vendors: "Aucun vendeur pour le moment",
+
+  
+  profile_title: "Mon profil",
+  profile_personal_info: "Informations personnelles",
+  profile_name: "Nom complet",
+  profile_email: "Email",
+  profile_location: "Localisation",
+  profile_member_since: "Membre depuis",
+  profile_orders_title: "Historique des commandes",
+  profile_no_orders: "Aucune commande pour le moment",
+  profile_order_ref: "Réf.",
+  profile_order_amount: "Montant",
+  profile_order_date: "Date",
+  profile_order_status: "Statut",
+  profile_status_pending: "En attente",
+  profile_status_completed: "Payée",
+  profile_status_cancelled: "Annulée",
+  profile_delivery_pending: "En préparation",
+  profile_delivery_transit: "En livraison",
+  profile_delivery_delivered: "Livrée",
+  profile_back_home: "Retour à l'accueil",
+  
   "choix": "choisissez ...",
   "site.name": "La force du livre",
   // translate-fr.ts
