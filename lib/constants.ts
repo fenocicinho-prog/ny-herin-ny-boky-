@@ -35,7 +35,7 @@ export const APP_NAME = SITE_NAME;
 export const MOBILE_MONEY_PHONE =
   process.env.NEXT_PUBLIC_MOBILE_MONEY_PHONE ||
   process.env.MOBILE_MONEY_PHONE ||
-  "+261 34 00 000 00";
+  "+261 34 21 746 39";
 
 export const formatPrice = (price: number) =>
   new Intl.NumberFormat("fr-MG", {

@@ -49,12 +49,12 @@ export function BookCard({ book, showActions = false }: BookCardProps) {
             </div>
           )}
           <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-amber-800 backdrop-blur-sm">
-          {t(`categories.${book.category}`)}
+          {book.title}
         </span>
         </div>
 
         <div className="flex flex-1 flex-col p-4" translate="no">
-          <h3 className="font-semibold text-stone-900 line-clamp-2">{book.title}</h3>
+          <h4 className="font-semibold text-stone-900 line-clamp-2">{t(`categories.${book.category}`)}</h4>
 
           {book.vendor?.companyName && (
             <p className="mt-1 flex items-center gap-1 text-xs text-stone-500">

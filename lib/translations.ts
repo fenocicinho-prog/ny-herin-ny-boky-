@@ -196,7 +196,7 @@ export const translations = {
   "book.title": "Lohateny",
   "book.titlePlaceholder": "Anaran'ny boky",
   "book.description": "Fanazavana",
-  "book.descriptionPlaceholder": "Soraty eto ny fanazavana",
+  "book.descriptionPlaceholder": "Soraty eto ny anaran'ny mpanoratra, ny isan'ny pejy ary fanazavana voafintina momba ny boky",
   "book.buyPrice": "Vidiny (Ar)",
   "book.rentPrice": "Vidiny fanofana (Ar)",
   "book.condition": "Toe-javatra",
@@ -388,6 +388,8 @@ export const translations = {
   cart_error_prefix: "Hadisoana: ",
   cart_error_checkout: "Hadisoana amin'ny fandoavana",
   cart_error_payment: "Hadisoana teo am-panefana",
+
+  auth_required_alert: "Midira aloha vao afaka",  
 } as const;
 
 export type TranslationKey = keyof typeof translations;

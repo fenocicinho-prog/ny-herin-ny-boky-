@@ -25,7 +25,7 @@ export function Header({ user }: HeaderProps) {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
         {/* Logo & Nom du site */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="relative h-10 w-10 overflow-hidden rounded-lg">
+          <div className="relative h-10 w-10 overflow-hidden rounded-full">
             <Image
               src="/logo-ny-herin-ny-boky.png"
               alt="NY HERIN'NY BOKY"

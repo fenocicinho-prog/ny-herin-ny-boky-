@@ -1,10 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CreditCard, Smartphone, ShoppingCart } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orders";
 import { useCart } from "@/lib/CartContext";
 import { MOBILE_MONEY_PHONE } from "@/lib/constants";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useSessionUser } from "@/lib/useSessionUser";
+import { redirectTo } from "@/lib/redirect";
 import type { BookWithVendor } from "./BookGrid";
 
 interface BookActionsProps {
@@ -13,6 +16,8 @@ interface BookActionsProps {
 
 export function BookActions({ book }: BookActionsProps) {
   const { t } = useLanguage();
+  const router = useRouter();
+  const { user } = useSessionUser();
   const { addItem } = useCart();
   const [showModal, setShowModal] = useState(false);
   const [orderType, setOrderType] = useState<"BUY" | "BORROW">("BUY");
@@ -24,13 +29,25 @@ export function BookActions({ book }: BookActionsProps) {
   const [loading, setLoading] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
+  const requireAuthOrRedirect = () => {
+    if (!user) {
+      alert(t("auth_required_alert"));
+      router.push("/inscription/client");
+      return false;
+    }
+    return true;
+  };
+
   const openModal = (type: "BUY" | "BORROW") => {
+    if (!requireAuthOrRedirect()) return;
     setOrderType(type);
     setShowModal(true);
     setError("");
   };
 
-const handleAddToCart = (type: "BUY" | "BORROW") => {
+  const handleAddToCart = (type: "BUY" | "BORROW") => {
+    if (!requireAuthOrRedirect()) return;
+
     const price = type === "BUY" ? book.buyPrice : book.rentPrice;
     if (price === null || price === undefined) {
       setError("Prix non disponible");
@@ -51,7 +68,7 @@ const handleAddToCart = (type: "BUY" | "BORROW") => {
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -61,15 +78,15 @@ const handleAddToCart = (type: "BUY" | "BORROW") => {
       const res = await fetch("/api/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           bookId: book.id,
           type: orderType,
-          price: orderType === "BUY" ? book.buyPrice : book.rentPrice
-         }),
+          price: orderType === "BUY" ? book.buyPrice : book.rentPrice,
+        }),
       });
       const { url, error } = await res.json();
       if (error) setError(error);
-      if (url) window.location.href = url;
+      if (url) redirectTo(url);
       setLoading(false);
       return;
     }
@@ -108,7 +125,6 @@ const handleAddToCart = (type: "BUY" | "BORROW") => {
           )}
         </div>
 
-        {/* Boutons Ajouter au panier */}
         <div className="flex gap-2">
           {book.buyPrice != null && book.buyPrice > 0 && (
             <button

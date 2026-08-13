@@ -19,6 +19,7 @@ export const translationsFr: Record<string, string> = {
   home_no_books: "Aucun livre pour le moment",
   home_no_vendors: "Aucun vendeur pour le moment",
 
+  auth_required_alert: "Veuillez vous connecter d'abord",
   
   profile_title: "Mon profil",
   profile_personal_info: "Informations personnelles",
@@ -193,7 +194,7 @@ export const translationsFr: Record<string, string> = {
   "book.title": "Titre",
   "book.titlePlaceholder": "Nom du livre",
   "book.description": "Description",
-  "book.descriptionPlaceholder": "Écrivez la description ici",
+  "book.descriptionPlaceholder": "Mettez l'auteur, le nombre de page, et un description bref",
   "book.buyPrice": "Prix d'achat (Ar)",
   "book.rentPrice": "Prix de location (Ar)",
   "book.condition": "État",
