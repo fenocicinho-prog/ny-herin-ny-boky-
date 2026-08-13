@@ -284,7 +284,13 @@ export async function getTopBooks() {
 
 export async function getVendors() {
   return prisma.user.findMany({
-    where: { role: "VENDOR", subscriptionActive: true },
+    where: {
+      role: "VENDOR",
+      OR: [
+        { subscriptionActive: true },
+        { sellerPlanType: "COMMISSION" },
+      ],
+    },
     select: {
       id: true,
       companyName: true,

@@ -1,11 +1,13 @@
 'use client'
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { loginAction } from "@/app/actions/auth";
 import { Header } from "@/components/ui/Header";
 import { APP_NAME } from "@/lib/constants";
 
-
 export default function ClientLoginPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       <Header />
@@ -14,13 +16,17 @@ export default function ClientLoginPage() {
           <h1 className="text-2xl font-bold text-stone-900">Hiditra — Client</h1>
           <p className="mt-2 text-sm text-stone-500">{APP_NAME}</p>
 
-          <form 
+          <form
             action={async (formData) => {
+              formData.set("expectedRole", "CLIENT");
               const result = await loginAction(formData);
               if (result?.error) {
                 alert(result.error);
+              } else if (result?.warning) {
+                alert(result.warning);
+                router.push(result.redirectTo);
               }
-            }} 
+            }}
             className="mt-8 space-y-4"
           >
             <div>

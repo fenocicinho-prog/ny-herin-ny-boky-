@@ -7,10 +7,9 @@ export function LoadingScreen() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // On simule un temps de chargement ou on attend que l'app soit prête
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 2000); // 2 secondes comme sur beaucoup d'apps
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -19,9 +18,9 @@ export function LoadingScreen() {
 
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#4a0404]">
-      <div className="relative h-40 w-40 animate-pulse">
+      <div className="relative h-40 w-40 animate-pulse overflow-hidden rounded-full bg-white/10 p-4">
         <Image
-          src="/logo-ny-herin-ny-boky.png"
+          src="/icon.png"
           alt="Ny Herin' ny Boky Logo"
           fill
           className="object-contain"

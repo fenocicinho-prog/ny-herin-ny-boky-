@@ -36,12 +36,21 @@ export async function loginAction(formData: FormData) {
 
   await createSession(user.id);
 
-  if (user.role === "VENDOR") {
-    redirect("/vendeur");
-  }
-  redirect("/client");
-}
+  const expectedRole = formData.get("expectedRole") as string | null;
+  const actualRole = user.role;
+  const correctPath = actualRole === "VENDOR" ? "/vendeur" : "/client";
 
+  // Si on connaît le rôle attendu (page client ou vendeur spécifique) et qu'il ne correspond pas
+  if (expectedRole && expectedRole !== actualRole) {
+    const roleLabel = actualRole === "VENDOR" ? "vendeur" : "client";
+    return {
+      warning: `Cet email existe déjà en tant que ${roleLabel}. Vous allez être redirigé.`,
+      redirectTo: correctPath,
+    };
+  }
+
+  redirect(correctPath);
+}
 export async function logoutAction() {
   await destroySession();
   redirect("/");

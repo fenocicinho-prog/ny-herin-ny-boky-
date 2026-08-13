@@ -63,13 +63,13 @@ export function BookGrid({ books, showActions = false }: BookGridProps) {
               </div>
             )}
             <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-white/90 px-2 py-1 text-[10px] font-medium text-amber-800 backdrop-blur-sm sm:left-3 sm:top-3 sm:px-2.5 sm:text-xs">
-              {t(`categories.${book.category}`)}
+              {book.title}
             </span>
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
             <h3 className="line-clamp-2 text-sm font-semibold text-stone-900 sm:text-base" translate="no">
-              {book.title}
+              {t(`categories.${book.category}`)}
             </h3>
 
             <p className="mt-1 truncate text-xs text-stone-500 sm:text-sm" translate="no">
