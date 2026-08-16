@@ -15,9 +15,12 @@ export default async function ClientDashboard({
   searchParams: Promise<{ q?: string; category?: string; success?: string; payment?: string }>;
 }) {
   const user = await getSessionUser();
-  if (!user || user.role !== 'VENDOR') {
-        redirect('/inscription/vendeur');
-      }
+  if (!user) {
+    redirect('/inscription/client');
+  }
+  if (user.role === 'VENDOR') {
+    redirect('/connexion/vendeur');
+  }
 
   const params = await searchParams;
   const query = params.q || "";

@@ -102,8 +102,13 @@ export default function HomePageClient({ books, vendors }: HomePageClientProps) 
        <p className="text-stone-500">{t("home_no_vendors")}</p>)}
       </section>
 
-      <footer className="border-t border-amber-100 bg-white py-8 text-center text-sm text-stone-500">
-        © 2026 <span translate="no">{SITE_NAME}</span> — {t("home.footer.description")}
+      <footer className="border-t border-amber-100 bg-white py-8 text-center text-sm text-stone-500">© 2026 <span translate="no">{SITE_NAME}</span> — {t("home.footer.description")}
+          <div className="mt-2 flex justify-center gap-4 text-xs">
+          <Link href="/a-propos" className="hover:text-amber-700">{t("footer.about")}</Link>
+          <Link href="/confidentialite" className="hover:text-amber-700">{t("footer.privacy")}</Link>
+          <Link href="/cgv" className="hover:text-amber-700">{t("footer.terms")}</Link>
+        </div>
+        <div className="text-white">Dj Cicinho genius</div>
       </footer>
     </div>
   );

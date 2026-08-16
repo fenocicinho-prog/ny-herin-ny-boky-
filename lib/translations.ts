@@ -389,7 +389,11 @@ export const translations = {
   cart_error_checkout: "Hadisoana amin'ny fandoavana",
   cart_error_payment: "Hadisoana teo am-panefana",
 
-  auth_required_alert: "Midira aloha vao afaka",  
+  "footer.about": "à propos de nous",
+  "footer.privacy": "le securité qu'on donne",
+  "footer.terms": "Fepetra amin'ny ankapobeny",
+
+  auth_required_alert: "Midira aloha vao afaka mividy na manofa boky",  
 } as const;
 
 export type TranslationKey = keyof typeof translations;

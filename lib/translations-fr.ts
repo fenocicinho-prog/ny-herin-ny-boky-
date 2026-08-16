@@ -19,7 +19,7 @@ export const translationsFr: Record<string, string> = {
   home_no_books: "Aucun livre pour le moment",
   home_no_vendors: "Aucun vendeur pour le moment",
 
-  auth_required_alert: "Veuillez vous connecter d'abord",
+  auth_required_alert: "Veuillez vous connecter d'abord pour pouvoir achetter ou louer un livre",
   
   profile_title: "Mon profil",
   profile_personal_info: "Informations personnelles",
@@ -41,6 +41,10 @@ export const translationsFr: Record<string, string> = {
   profile_delivery_delivered: "Livrée",
   profile_back_home: "Retour à l'accueil",
   
+  "footer.about": "à propos de nous",
+  "footer.privacy": "le securité qu'on donne",
+  "footer.terms": "Conditions Générale",
+
   "choix": "choisissez ...",
   "site.name": "La force du livre",
   // translate-fr.ts
@@ -84,7 +88,7 @@ export const translationsFr: Record<string, string> = {
 
   // PAGE D'ACCUEIL
   "home.hero.title": "La force des livres",
-  "home.hero.subtitle": "Marketplace de vente et location de livres, et aussi pour acheter n'importe quelles livres, facile a utilisé et très racurant grace au communication direct aux clients et aux vendeurs",
+  "home.hero.subtitle": "Marketplace de vente et location de livres, et aussi pour acheter n'importe quelles livres, facile a utilisé et très rassurant grace au communication direct aux clients et aux vendeurs",
   "home.hero.description": "Achetez et louez des livres. Préservez le savoir à travers les livres.",
   "home.hero.ctaBuy": "Acheter des livres",
   "home.hero.ctaSell": "Vendre des livres",

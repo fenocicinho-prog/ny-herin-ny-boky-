@@ -17,8 +17,8 @@ export function LoadingScreen() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#4a0404]">
-      <div className="relative h-40 w-40 animate-pulse overflow-hidden rounded-full bg-white/10 p-4">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
+      <div className="relative h-40 w-40 overflow-hidden rounded-full border-4 border-amber-800 p-4">
         <Image
           src="/icon.png"
           alt="Ny Herin' ny Boky Logo"
@@ -28,9 +28,9 @@ export function LoadingScreen() {
         />
       </div>
       <div className="mt-8 flex space-x-2">
-        <div className="h-2 w-2 animate-bounce rounded-full bg-yellow-400 [animation-delay:-0.3s]"></div>
-        <div className="h-2 w-2 animate-bounce rounded-full bg-green-500 [animation-delay:-0.15s]"></div>
-        <div className="h-2 w-2 animate-bounce rounded-full bg-white"></div>
+        <div className="h-2 w-2 animate-bounce rounded-full bg-amber-800 [animation-delay:-0.3s]"></div>
+        <div className="h-2 w-2 animate-bounce rounded-full bg-amber-600 [animation-delay:-0.15s]"></div>
+        <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400"></div>
       </div>
     </div>
   );
