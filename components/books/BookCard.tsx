@@ -57,10 +57,17 @@ export function BookCard({ book, showActions = false }: BookCardProps) {
           <h4 className="font-semibold text-stone-900 line-clamp-2">{t(`categories.${book.category}`)}</h4>
 
           {book.vendor?.companyName && (
-            <p className="mt-1 flex items-center gap-1 text-xs text-stone-500">
-              <Store className="h-3 w-3" />
-              {book.vendor.companyName}
-            </p>
+            <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5">
+              <Store className="h-3.5 w-3.5 text-amber-700 shrink-0" />
+              <div>
+                <span className="block text-[10px] text-stone-400 leading-none">
+                  {t("bookCard.shippedBy")}
+                </span>
+                <span className="text-xs font-medium text-amber-800">
+                  {book.vendor.companyName}
+                </span>
+              </div>
+            </div>
           )}
 
           {book.description && (

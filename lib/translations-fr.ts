@@ -390,4 +390,7 @@ export const translationsFr: Record<string, string> = {
   cart_error_prefix: "Erreur: ",
   cart_error_checkout: "Erreur checkout",
   cart_error_payment: "Erreur lors du paiement",
+  "bookCard.shippedBy": "Expédié par",
+  "bookCard.soldBy": "Vendu par",
+
 };

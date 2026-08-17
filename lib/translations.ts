@@ -393,7 +393,10 @@ export const translations = {
   "footer.privacy": "le securité qu'on donne",
   "footer.terms": "Fepetra amin'ny ankapobeny",
 
-  auth_required_alert: "Midira aloha vao afaka mividy na manofa boky",  
+  auth_required_alert: "Midira aloha vao afaka mividy na manofa boky",
+  "bookCard.shippedBy": "Alefa avy amin'ny",
+  "bookCard.soldBy": "Avy amin'ny",
+  
 } as const;
 
 export type TranslationKey = keyof typeof translations;

@@ -40,19 +40,84 @@ export async function sendSaleEmail({
       to: process.env.RESEND_ALLOW_UNVERIFIED === 'true' ? vendorEmail : (process.env.DEV_NOTIFICATION_EMAIL || 'achillecicinhofeno@gmail.com'),
 
       subject: `📚 Nouvelle commande : ${bookTitle}`,
-      html: `
-        <h1>Commande validée</h1>
-        <p>Bonjour,</p>
-        <p>Une commande pour votre livre <strong>${bookTitle}</strong> a été validée.</p>
-        <ul>
-          <li>Acheteur: ${buyerName}</li>
-          <li>Montant: ${price} Ar</li>
-          <li>Commission plateforme: ${commission} Ar</li>
-          <li>Montant à reverser: ${gain} Ar</li>
-        </ul>
-        ${buyerPhone ? `<p>Veuillez contacter l'acheteur au: <strong>${buyerPhone}</strong></p>` : ''}
-        ${deliveryLocation ? `<p>Localisation acheteur: <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deliveryLocation)}">Voir la localisation</a></p>` : ''}
-      `,
+      // lib/send-sale-email.ts
+html: `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8"/>
+    <style>
+      body { font-family: Arial, sans-serif; background: #f9f5f0; margin: 0; padding: 20px; }
+      .container { max-width: 560px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+      .header { background: #92400e; padding: 24px 32px; }
+      .header h1 { color: white; margin: 0; font-size: 20px; }
+      .header p { color: #fde68a; margin: 4px 0 0; font-size: 14px; }
+      .body { padding: 32px; }
+      .book-title { font-size: 18px; font-weight: bold; color: #1c1917; margin-bottom: 24px; }
+      .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f4; font-size: 14px; }
+      .row:last-child { border-bottom: none; }
+      .label { color: #78716c; }
+      .value { font-weight: 600; color: #1c1917; }
+      .gain { color: #15803d; font-size: 18px; }
+      .alert { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 24px 0; }
+      .alert p { margin: 0; font-size: 14px; color: #92400e; }
+      .btn { display: inline-block; background: #92400e; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
+      .footer { background: #f9f5f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #a8a29e; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📚 Nouvelle commande reçue</h1>
+        <p>Ny Herin'ny Boky — Marketplace</p>
+      </div>
+
+      <div class="body">
+        <p style="color:#78716c;font-size:14px;margin-top:0;">Bonjour,</p>
+        <p class="book-title">"${bookTitle}"</p>
+
+        <div class="row">
+          <span class="label">👤 Acheteur</span>
+          <span class="value">${buyerName}</span>
+        </div>
+        <div class="row">
+          <span class="label">💰 Montant total</span>
+          <span class="value">${price.toLocaleString('fr-FR')} Ar</span>
+        </div>
+        <div class="row">
+          <span class="label">📊 Commission plateforme</span>
+          <span class="value" style="color:#dc2626;">- ${commission.toLocaleString('fr-FR')} Ar</span>
+        </div>
+        <div class="row">
+          <span class="label">✅ Votre gain net</span>
+          <span class="value gain">+ ${gain.toLocaleString('fr-FR')} Ar</span>
+        </div>
+
+        ${buyerPhone ? `
+        <div class="alert">
+          <p>📞 Contactez l'acheteur pour la livraison :</p>
+          <p style="font-size:20px;font-weight:bold;margin-top:8px;">${buyerPhone}</p>
+        </div>
+        ` : ''}
+
+        ${deliveryLocation ? `
+        <div style="margin-top:16px;">
+          <p style="font-size:14px;color:#78716c;margin-bottom:8px;">📍 Localisation de livraison :</p>
+          <p style="font-weight:600;color:#1c1917;margin:0 0 12px;">${deliveryLocation}</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deliveryLocation)}" class="btn">
+            Voir sur Google Maps
+          </a>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="footer">
+        Ny Herin'ny Boky • Ne pas répondre à cet email
+      </div>
+    </div>
+  </body>
+  </html>
+`,
     });
     return { success: true };
   } catch (error) {
