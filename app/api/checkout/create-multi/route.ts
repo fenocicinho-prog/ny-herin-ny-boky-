@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { calculerCommission } from '@/lib/commission';
-import { sendSaleEmail } from '@/lib/send-sale-email';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { getStripe } from '@/lib/stripe-server';
 
 interface CartItemPayload {
   bookId: string;
@@ -92,35 +89,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Notifie chaque vendeur distinct pour ses propres articles
-      const byVendor = new Map<string, typeof order.items>();
-      for (const it of order.items) {
-        const arr = byVendor.get(it.sellerId) ?? [];
-        arr.push(it);
-        byVendor.set(it.sellerId, arr);
-      }
-
-      for (const [, vendorItems] of byVendor) {
-        const seller = vendorItems[0]?.seller;
-        if (!seller?.email) continue;
-        try {
-          const vendorSubtotal = vendorItems.reduce((s, it) => s + Number(it.price) * it.quantity, 0);
-          const vendorFee = calculerCommission(vendorSubtotal);
-          await sendSaleEmail({
-            vendorEmail: seller.email,
-            bookTitle: vendorItems.map((it) => it.book.title).join(', '),
-            buyerName: order.user.firstName || order.user.email,
-            price: vendorSubtotal,
-            commission: vendorFee,
-            gain: vendorSubtotal - vendorFee,
-            buyerPhone: order.phoneNumber || order.user.phoneNumber || null,
-            deliveryLocation: order.user.location || null,
-          });
-        } catch (emailError) {
-          console.error('Échec envoi email vendeur:', emailError);
-        }
-      }
-
       return NextResponse.json({ mvolaUrl: `/client/paiement-mvola/${order.id}` });
     }
 
@@ -175,7 +143,7 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -183,6 +151,11 @@ export async function POST(req: NextRequest) {
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/client/panier?payment=cancelled`,
       customer_email: user.email,
       metadata: { orders: orders.join(','), userId: user.id },
+    });
+
+    await prisma.order.updateMany({
+      where: { id: { in: orders } },
+      data: { stripeSessionId: session.id },
     });
 
     return NextResponse.json({ stripeUrl: session.url });

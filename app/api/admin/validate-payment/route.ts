@@ -1,7 +1,7 @@
 // app/api/admin/validate-payment/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendSaleEmail } from "@/lib/send-sale-email";
+import { notifyOrderVendors } from "@/lib/notify-order-vendors";
 import { getSessionUser } from "@/lib/auth";
 
 export async function POST(req: Request) {
@@ -54,33 +54,11 @@ export async function POST(req: Request) {
       },
     });
 
-    // Après la validation, notifier chaque vendeur par email
+    // Après la validation, notifier chaque vendeur avec les livres concernés.
     try {
-      const fullOrder = await prisma.order.findUnique({
-        where: { id: orderId },
-        include: { items: { include: { book: true, seller: true } }, user: true },
-      });
-
-      if (fullOrder && fullOrder.items) {
-        for (const item of fullOrder.items) {
-          const seller = item.seller;
-          if (seller && seller.email) {
-            await sendSaleEmail({
-              vendorEmail: seller.email,
-              bookTitle: item.book?.title || 'Votre livre',
-              buyerName: fullOrder.user?.firstName || fullOrder.user?.email || 'Acheteur',
-              price: fullOrder.amount,
-              commission: fullOrder.platformFee,
-              gain: fullOrder.vendorPaymentAmount,
-              buyerPhone: fullOrder.phoneNumber || fullOrder.user?.phoneNumber || null,
-              deliveryLocation: fullOrder.deliveryLocation || fullOrder.user?.location || null,
-            });
-          }
-        }
-      }
-
+      await notifyOrderVendors(orderId);
     } catch (notifyError) {
-      console.error('Erreur notification vendeur:', notifyError);
+      console.error("Erreur notification vendeur:", notifyError);
     }
 
     return NextResponse.json({ success: true, order: updatedOrder });

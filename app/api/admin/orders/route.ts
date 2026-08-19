@@ -14,13 +14,20 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
     include: {
       user: {
-        select: { firstName: true, lastName: true, email: true }
+        select: { firstName: true, lastName: true, email: true, phoneNumber: true, location: true }
       },
       items: {
         include: {
           book: { select: { title: true } },
           seller: {
-            select: { firstName: true, lastName: true, mvolaNumber: true }
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+              phoneNumber: true,
+              mvolaNumber: true,
+              sellerProfile: { select: { mvolaNumber: true } },
+            }
           }
         }
       }

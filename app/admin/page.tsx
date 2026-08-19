@@ -22,6 +22,7 @@ type Order = {
       firstName: string | null
       lastName: string | null
       mvolaNumber: string | null
+      sellerProfile: { mvolaNumber: string | null } | null
     }
   }[]
 }
@@ -231,7 +232,7 @@ export default function AdminPage() {
                             {t("admin.vendor")}: {item.seller.firstName} {item.seller.lastName}
                           </p>
                           <p className="text-xs font-bold text-green-700">
-                            MVola: {item.seller.mvolaNumber || (
+                            MVola: {item.seller.mvolaNumber || item.seller.sellerProfile?.mvolaNumber || (
                               <span className="text-red-400">{t("admin.notSet")}</span>
                             )}
                           </p>

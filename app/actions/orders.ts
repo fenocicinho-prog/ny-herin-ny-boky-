@@ -1,6 +1,5 @@
 "use server";
 
-import { sendSaleEmail } from "@/lib/send-sale-email";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -72,24 +71,6 @@ export async function createOrderAction(formData: FormData): Promise<{ error?: s
       },
       include: { user: true, items: { include: { book: true, seller: true } } },
     });
-
-    const item = order.items[0];
-    if (item && item.seller && item.seller.email) {
-      try {
-        await sendSaleEmail({
-          vendorEmail: item.seller.email,
-          bookTitle: item.book.title,
-          buyerName: order.user.firstName || order.user.email,
-          price: order.amount,
-          commission: order.platformFee,
-          gain: order.vendorPaymentAmount,
-          buyerPhone: order.phoneNumber || order.user.phoneNumber || null,
-          deliveryLocation: order.deliveryLocation || order.user.location || null,
-        });
-      } catch (emailError) {
-        console.error("Échec envoi email:", emailError);
-      }
-    }
 
     redirect(`/client/paiement-mvola/${order.id}`);
   }
@@ -223,36 +204,30 @@ export async function createCartOrderAction(formData: FormData): Promise<{ error
       include: { user: true, items: { include: { book: true, seller: true } } },
     });
 
-    const bySeller = new Map<string, typeof order.items>();
-    for (const item of order.items) {
-      bySeller.set(item.sellerId, [...(bySeller.get(item.sellerId) ?? []), item]);
-    }
-    for (const sellerItems of bySeller.values()) {
-      const seller = sellerItems[0].seller;
-      if (!seller?.email) continue;
-      const subtotal = sellerItems.reduce((s, i) => s + i.price * i.quantity, 0);
-      const subtotalFee = calculerCommission(subtotal);
-      try {
-        await sendSaleEmail({
-          vendorEmail: seller.email,
-          bookTitle: sellerItems.map((i) => `${i.book.title}${i.quantity > 1 ? ` (x${i.quantity})` : ""}`).join(", "),
-          buyerName: order.user.firstName || order.user.email,
-          price: subtotal,
-          commission: subtotalFee,
-          gain: subtotal - subtotalFee,
-          buyerPhone: order.phoneNumber || order.user.phoneNumber || null,
-          deliveryLocation: order.deliveryLocation || order.user.location || null,
-        });
-      } catch (e) {
-        console.error("Échec envoi email vendeur:", e);
-      }
-    }
-
     redirect(`/client/paiement-mvola/${order.id}`);
   }
 
   // Stripe
   try {
+    const clientTrxRef = `STR-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    const order = await prisma.order.create({
+      data: {
+        type: orderType,
+        paymentMethod: "STRIPE",
+        paymentStatus: "PENDING",
+        deliveryStatus: "PENDING",
+        amount,
+        userId: user.id,
+        clientTrxRef,
+        mvolaStatus: "EN_ATTENTE_CLIENT",
+        paidToVendor: false,
+        platformFee,
+        vendorPaymentAmount,
+        deliveryLocation,
+        items: { create: orderItemsData },
+      },
+    });
+
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: parsedItems.data.map((it) => {
@@ -263,29 +238,14 @@ export async function createCartOrderAction(formData: FormData): Promise<{ error
           quantity: it.quantity,
         };
       }),
-      metadata: { type: "cart_order", userId: user.id },
+      metadata: { orderId: order.id, type: "cart_order", userId: user.id },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/client?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/client?cancelled=true`,
     });
 
-    const clientTrxRef = `STR-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-    await prisma.order.create({
-      data: {
-        type: orderType,
-        paymentMethod: "STRIPE",
-        paymentStatus: "PENDING",
-        deliveryStatus: "PENDING",
-        amount,
-        stripeSessionId: session.id,
-        userId: user.id,
-        clientTrxRef,
-        mvolaStatus: "EN_ATTENTE_CLIENT",
-        paidToVendor: false,
-        platformFee,
-        vendorPaymentAmount,
-        deliveryLocation,
-        items: { create: orderItemsData },
-      },
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { stripeSessionId: session.id },
     });
 
     if (session.url) redirect(session.url);

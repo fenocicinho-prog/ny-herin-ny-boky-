@@ -4,9 +4,15 @@ import { Resend } from 'resend';
 let resend: Resend | null = null;
 
 function getResend() {
-  if (!resend) {
-    resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key');
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY n'est pas configurée");
   }
+
+  if (!resend) {
+    resend = new Resend(apiKey);
+  }
+
   return resend;
 }
 
@@ -30,14 +36,16 @@ export async function sendSaleEmail({
   deliveryLocation?: string | null;
 }) {
   try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL;
+    if (!fromEmail) {
+      throw new Error("RESEND_FROM_EMAIL n'est pas configurée avec un domaine vérifié");
+    }
+
     const resendClient = getResend();
     await resendClient.emails.send({
-      // ✅ FROM : Doit être l'adresse par défaut de Resend
-      from: 'onboarding@resend.dev', 
-      
-      // ✅ TO : Pour tester, forcez VOTRE email. 
-      // Ne mettez PAS vendorEmail ici tant que vous n'avez pas vérifié de domaine.
-      to: process.env.RESEND_ALLOW_UNVERIFIED === 'true' ? vendorEmail : (process.env.DEV_NOTIFICATION_EMAIL || 'achillecicinhofeno@gmail.com'),
+      from: fromEmail,
+      // Le message doit être envoyé au vendeur concerné, pas à une adresse de test.
+      to: vendorEmail,
 
       subject: `📚 Nouvelle commande : ${bookTitle}`,
       // lib/send-sale-email.ts

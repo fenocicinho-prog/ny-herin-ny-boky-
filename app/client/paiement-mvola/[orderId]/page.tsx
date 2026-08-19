@@ -7,9 +7,9 @@ import { MvolaPaymentContent } from "@/components/mvola/MvolaPaymentContent";
 export default async function PaiementMvolaPage({
   params,
 }: {
-  params: Promise<{ order: string }>; // le dossier s'appelle [order] chez toi
+  params: Promise<{ orderId: string }>;
 }) {
-  const { order: orderId } = await params;
+  const { orderId } = await params;
   const user = await requireAuth("CLIENT");
 
   const order = await prisma.order.findFirst({

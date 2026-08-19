@@ -61,7 +61,7 @@ export function PaymentModal({ book, orderType, onClose }: PaymentModalProps) {
             bookId: book.id,
             title: book.title,
             price: amount,
-            orderType: orderType,
+            type: orderType,
             deliveryLocation,
           }),
         });
