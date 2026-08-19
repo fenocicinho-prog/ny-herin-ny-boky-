@@ -26,6 +26,8 @@ export default function CartPage() {
   const groupedByVendor = getGroupedByVendor();
   const vendorCount = Object.keys(groupedByVendor).length;
 
+  
+
   const handleCheckout = async () => {
     if (!user?.id) {
       router.push('/connexion');
@@ -68,18 +70,19 @@ export default function CartPage() {
       }
 
       if (data.stripeUrl) {
-        redirectTo(data.stripeUrl);
-      } else if (data.mvolaUrl) {
-        redirectTo(data.mvolaUrl);
-      } else {
-        alert(t('cart_error_checkout'));
+          redirectTo(data.stripeUrl);
+        } else if (data.mvolaUrl) {
+          clearCart();
+          router.push(data.mvolaUrl);
+        } else {
+          alert(t('cart_error_checkout'));
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Erreur checkout:', error);
+        alert(t('cart_error_payment'));
         setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Erreur checkout:', error);
-      alert(t('cart_error_payment'));
-      setIsLoading(false);
-    }
   };
 
   if (items.length === 0) {
@@ -251,20 +254,27 @@ export default function CartPage() {
                 </button>
               </div>
 
-              {paymentMethod === 'MOBILE_MONEY' && (
-                <div className="mt-3 space-y-2">
+              {paymentMethod === "MOBILE_MONEY" && (
+                <>
                   <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-                    {t('order.sendTo')}: <strong>{MOBILE_MONEY_PHONE}</strong>
+                    {t("order.sendTo")}: <strong>{MOBILE_MONEY_PHONE}</strong>
                   </div>
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+261 34 XX XXX XX"
-                    className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
-                  />
-                </div>
+                  <div>
+                    <label className="text-sm font-medium text-stone-700">
+                      {t("order.phone")}
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="+261 34 XX XXX XX/ +261 33 XX XXX XX/ +261 32 XX XXX XX/ +261 37 XX XXX XX/ +261 38 XX XXX XX"
+                      required
+                      className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                </>
               )}
+
             </div>
 
             <button

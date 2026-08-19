@@ -85,7 +85,7 @@ export const translations = {
 
   // ===== PAGE D'ACCUEIL =====
   "home.hero.title": "Ny herin'ny boky",
-  "home.hero.subtitle": "Trano fivarotana sy fanofana boky, Ary ahitana ireo boky maro isan-karazany, mora ampisaina ary azo atokisana amin'ny alalan'ny fifandraisana mivantana eo amin'ny mpivarotra sy mpividy",
+  "home.hero.subtitle": "Mino izahay fa ny fahafahana mahazo boky mety dia afaka manokatra sehatra vaovao, manitatra ny fahalalana ary manampy amin'ny fanovana ny fiainana.",
   "home.hero.description": "Fividianana sy fanofana boky. Mitandro ny fahalalana amin'ny alalan'ny boky.",
   "home.hero.ctaBuy": "Hividy boky",
   "home.hero.ctaSell": "Hividy boky",

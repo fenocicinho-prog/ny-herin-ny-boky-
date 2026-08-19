@@ -7,6 +7,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { getStripe, MOBILE_MONEY_PHONE } from "@/lib/stripe-server";
+import { calculerCommission } from "@/lib/commission";
 
 // ✅ CORRECTION : Ajouter ON_SITE au schéma de validation pour le PaymentModal
 const orderSchema = z.object({
@@ -16,12 +17,6 @@ const orderSchema = z.object({
   phoneNumber: z.string().optional(),
 });
 
-// ✅ Harmonisation : Utiliser la même fonction de commission partout
-function calculerCommission(prix: number): number {
-  if (prix <= 50000) return Math.round(prix * 0.08)
-  if (prix <= 90000) return Math.round(prix * 0.07)
-  return Math.round(prix * 0.05)
-}
 
 export async function createOrderAction(formData: FormData): Promise<{ error?: string; message?: string }> {
   const user = await requireAuth("CLIENT");

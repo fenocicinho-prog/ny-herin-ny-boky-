@@ -106,7 +106,7 @@ export function BookActions({ book }: BookActionsProps) {
   return (
     <>
       <div className="mt-4 space-y-2">
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           {book.buyPrice != null && book.buyPrice > 0 && (
             <button
               onClick={() => openModal("BUY")}
@@ -123,8 +123,7 @@ export function BookActions({ book }: BookActionsProps) {
               {t("bookCard.borrow")}
             </button>
           )}
-        </div>
-
+        </div> */}
         <div className="flex gap-2">
           {book.buyPrice != null && book.buyPrice > 0 && (
             <button
