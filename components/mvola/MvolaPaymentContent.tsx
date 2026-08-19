@@ -7,7 +7,7 @@ import {
   Smartphone, Send, Hash, Wallet, Lock, MessageSquare,
   ShieldCheck, Copy, Check, CheckCircle, Clock, PhoneCall,
 } from "lucide-react";
-import { detectOperator, buildUssdLink, operatorLabel, operatorTheme } from "@/lib/mobile-operator";
+import { buildPaymentMotif, detectOperator, buildUssdLink, operatorLabel, operatorTheme } from "@/lib/mobile-operator";
 
 interface OrderLineItem { title: string; quantity: number; price: number }
 
@@ -39,12 +39,16 @@ export function MvolaPaymentContent({
     ? items
     : [{ title: bookTitle ?? "Commande", quantity: 1, price: safeAmount }];
 
+  const motifTitle = lineItems.map((item) => item.title).join(" ");
+  const paymentMotif = buildPaymentMotif(motifTitle);
   const operator = useMemo(
     () => (clientPhoneNumber ? detectOperator(clientPhoneNumber) : "UNKNOWN"),
     [clientPhoneNumber]
   );
   const theme = operatorTheme(operator);
-  const ussdLink = clientPhoneNumber ? buildUssdLink(operator, sellerMvolaNumber, safeAmount) : null;
+  const ussdLink = clientPhoneNumber
+    ? buildUssdLink(operator, sellerMvolaNumber, safeAmount, motifTitle)
+    : null;
 
   // État dérivé : pas besoin de le stocker séparément, on l'obtient
   // directement de "launched" et "ussdLink" au moment du rendu.
@@ -179,6 +183,11 @@ export function MvolaPaymentContent({
                   ? "Saisis ton code secret sur l'écran qui vient de s'ouvrir."
                   : "Si rien ne s'ouvre automatiquement, appuie sur le bouton."}
               </p>
+              {paymentMotif && (
+                <p className="mt-2 text-center text-[11px] font-medium text-stone-500">
+                  Motif : <span className="font-mono text-stone-700">{paymentMotif}</span>
+                </p>
+              )}
             </div>
           )}
           {!ussdLink && (

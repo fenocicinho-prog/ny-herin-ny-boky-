@@ -45,23 +45,40 @@ export function operatorTheme(operator: MobileOperator) {
  * changent parfois de structure — teste avec un vrai petit transfert avant
  * de mettre en prod, et ajuste si besoin.
  */
+export function buildPaymentMotif(bookTitle?: string): string | null {
+  const title = (bookTitle ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "")
+    .toUpperCase();
+
+  if (!title) return null;
+
+  // Un motif court évite les caractères refusés et les chaînes USSD trop longues.
+  return `ACHAT${title}`.slice(0, 35);
+}
+
 export function buildUssdLink(
   operator: MobileOperator,
   destinationNumber: string,
-  amount: number
+  amount: number,
+  bookTitle?: string,
 ): string | null {
   const dest = normalizePhone(destinationNumber);
   const amt = Math.round(amount);
+  const motif = buildPaymentMotif(bookTitle);
   let code: string | null = null;
 
   switch (operator) {
-    case "TELMA":  // MVola: #111*1*2*numero*montant#
+    case "TELMA":  // MVola: le motif libre n'est pas documenté dans le raccourci USSD.
       code = `#111*1*2*${dest}*${amt}#`;
       break;
-    case "ORANGE": // Orange Money: #144*1*3*numero*montant#
-      code = `#144*1*3*${dest}*${amt}#`;
+    case "ORANGE": // Orange Money: #144*1*3*numero*montant*motif#
+      code = motif
+        ? `#144*1*3*${dest}*${amt}*${motif}#`
+        : `#144*1*3*${dest}*${amt}#`;
       break;
-    case "AIRTEL": // Airtel Money: *436*2*1*numero*montant#
+    case "AIRTEL": // Airtel Money: le motif libre n'est pas documenté dans le raccourci USSD.
       code = `*436*2*1*${dest}*${amt}#`;
       break;
     default:
