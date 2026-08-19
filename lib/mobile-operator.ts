@@ -55,13 +55,13 @@ export function buildUssdLink(
   let code: string | null = null;
 
   switch (operator) {
-    case "TELMA":  // #111# → 2 Transférer argent → numéro → montant
-      code = `#111*2*${dest}*${amt}#`;
+    case "TELMA":  // MVola: #111*1*2*numero*montant#
+      code = `#111*1*2*${dest}*${amt}#`;
       break;
-    case "ORANGE": // #144# → 1 Transfert d'argent → numéro → montant
-      code = `#144*1*${dest}*${amt}#`;
+    case "ORANGE": // Orange Money: #144*1*3*numero*montant#
+      code = `#144*1*3*${dest}*${amt}#`;
       break;
-    case "AIRTEL": // *436# → 2 Transférer → 1 vers Airtel Money → numéro → montant
+    case "AIRTEL": // Airtel Money: *436*2*1*numero*montant#
       code = `*436*2*1*${dest}*${amt}#`;
       break;
     default:
