@@ -257,6 +257,12 @@ export const translations = {
   "payment.pendingRef": "Reference",
   "payment.pendingOrderDetails": "Hijery ny antsipirian'ny kaomandy",
   "payment.pendingDashboard": "Miverina amin'ny dashboard",
+  "payment.mvolaStepOrder": "Fanamboarana",
+  "payment.mvolaStepPay": "Fandoavam-bola",
+  "payment.mvolaStepVerify": "Fanamarinana",
+  "payment.mvolaTrustNote": "Voatahiry tsiambaratelo tanteraka ny laharanao sy ny kaody miafinao. Tsy angatahinay velively izany.",
+  "payment.mvolaFinalStep": "Dingana farany: alefaso aminay ny porofo fandoavam-bola",
+  "cart_error_phone_required": "Ampidiro ny laharana findainao mba handoavana amin'ny Mobile Money",
 
   // ===== COMMANDE =====
   "order.title": "Fanamarinana fandoavana",

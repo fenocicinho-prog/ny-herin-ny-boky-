@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, Smartphone, CreditCard } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { useCart } from '@/lib/CartContext';
 import { useLanguage } from '@/lib/LanguageContext';
-import { formatPrice } from '@/lib/constants';
+import { formatPrice, MOBILE_MONEY_PHONE } from '@/lib/constants';
 import { useSessionUser } from '@/lib/useSessionUser';
 import { redirectTo } from '@/lib/redirect';
 
@@ -19,6 +19,8 @@ export default function CartPage() {
   const { t } = useLanguage();
   const { user, isLoading: sessionLoading } = useSessionUser();
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'MOBILE_MONEY' | 'STRIPE'>('MOBILE_MONEY');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const total = getTotalPrice();
   const groupedByVendor = getGroupedByVendor();
@@ -31,6 +33,11 @@ export default function CartPage() {
     }
 
     if (items.length === 0) return;
+
+    if (paymentMethod === 'MOBILE_MONEY' && !phoneNumber) {
+      alert(t('cart_error_phone_required'));
+      return;
+    }
 
     setIsLoading(true);
 
@@ -47,6 +54,8 @@ export default function CartPage() {
             vendorId: item.vendorId,
           })),
           totalAmount: total,
+          paymentMethod,
+          ...(paymentMethod === 'MOBILE_MONEY' && { phoneNumber }),
         }),
       });
 
@@ -208,6 +217,54 @@ export default function CartPage() {
             <div className="mb-6 flex justify-between">
               <span className="text-lg font-semibold text-stone-900">{t('cart_total')}</span>
               <span className="text-2xl font-bold text-amber-700">{formatPrice(total)}</span>
+            </div>
+
+            {/* Choix du mode de paiement */}
+            <div className="mb-6">
+              <label className="text-sm font-medium text-stone-700">
+                {t('payment.mobileMoney')}
+              </label>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('MOBILE_MONEY')}
+                  className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm ${
+                    paymentMethod === 'MOBILE_MONEY'
+                      ? 'border-amber-500 bg-amber-50 text-amber-900'
+                      : 'border-stone-200 text-stone-600'
+                  }`}
+                >
+                  <Smartphone className="h-4 w-4" />
+                  {t('payment.mobileMoney')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('STRIPE')}
+                  className={`flex items-center justify-center gap-2 rounded-lg border p-3 text-sm ${
+                    paymentMethod === 'STRIPE'
+                      ? 'border-amber-500 bg-amber-50 text-amber-900'
+                      : 'border-stone-200 text-stone-600'
+                  }`}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  {t('payment.online')}
+                </button>
+              </div>
+
+              {paymentMethod === 'MOBILE_MONEY' && (
+                <div className="mt-3 space-y-2">
+                  <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+                    {t('order.sendTo')}: <strong>{MOBILE_MONEY_PHONE}</strong>
+                  </div>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="+261 34 XX XXX XX"
+                    className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+              )}
             </div>
 
             <button

@@ -259,6 +259,13 @@ export const translationsFr: Record<string, string> = {
   "payment.pendingRef": "Référence",
   "payment.pendingOrderDetails": "Voir le détail de la commande",
   "payment.pendingDashboard": "Retour au tableau de bord",
+  "payment.mvolaStepOrder": "Commande",
+  "payment.mvolaStepPay": "Paiement",
+  "payment.mvolaStepVerify": "Vérification",
+  "payment.mvolaTrustNote": "Votre numéro et votre code secret restent strictement confidentiels. Nous ne les demandons jamais.",
+  "payment.mvolaFinalStep": "Dernière étape : envoyez-nous la preuve de paiement",
+  
+  "cart_error_phone_required": "Merci d'indiquer votre numéro de téléphone pour le paiement Mobile Money",
 
   // COMMANDE
   "order.title": "Confirmation de paiement",
