@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       sameSite: 'lax'
     });
 
-    return NextResponse.json({ success: true, role: user.role });
+    return NextResponse.json({ success: true, role: user.role, isAdmin: user.isAdmin });
   } catch (error) {
     console.error("Erreur Login:", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
