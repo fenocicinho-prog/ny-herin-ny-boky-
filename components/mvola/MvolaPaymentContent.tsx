@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { SubmitMvolaProofForm } from "@/components/forms/submit-form";
 import {
@@ -9,11 +9,7 @@ import {
 } from "lucide-react";
 import { detectOperator, buildUssdLink, operatorLabel, operatorTheme } from "@/lib/mobile-operator";
 
-interface OrderLineItem {
-  title: string;
-  quantity: number;
-  price: number;
-}
+interface OrderLineItem { title: string; quantity: number; price: number }
 
 interface MvolaPaymentContentProps {
   orderId: string;
@@ -24,19 +20,21 @@ interface MvolaPaymentContentProps {
   clientPhoneNumber?: string;
 }
 
+const AUTO_DIAL_SECONDS = 2;
+
 export function MvolaPaymentContent({
-  orderId,
-  bookTitle,
-  items,
-  amount,
-  sellerMvolaNumber,
-  clientPhoneNumber,
+  orderId, bookTitle, items, amount, sellerMvolaNumber, clientPhoneNumber,
 }: MvolaPaymentContentProps) {
   const { t } = useLanguage();
   const [copiedField, setCopiedField] = useState<"amount" | "number" | null>(null);
 
-  const safeAmount = Number(amount) || 0;
+  // Ces deux états ne sont plus jamais écrits en synchrone dans un effect :
+  // - countdown est décrémenté depuis le callback du setInterval
+  // - launched passe à true depuis ce même callback
+  const [countdown, setCountdown] = useState(AUTO_DIAL_SECONDS);
+  const [launched, setLaunched] = useState(false);
 
+  const safeAmount = Number(amount) || 0;
   const lineItems: OrderLineItem[] = items?.length
     ? items
     : [{ title: bookTitle ?? "Commande", quantity: 1, price: safeAmount }];
@@ -47,6 +45,41 @@ export function MvolaPaymentContent({
   );
   const theme = operatorTheme(operator);
   const ussdLink = clientPhoneNumber ? buildUssdLink(operator, sellerMvolaNumber, safeAmount) : null;
+
+  // État dérivé : pas besoin de le stocker séparément, on l'obtient
+  // directement de "launched" et "ussdLink" au moment du rendu.
+  const autoState: "idle" | "counting" | "launched" = launched
+    ? "launched"
+    : ussdLink
+      ? "counting"
+      : "idle";
+
+  const launchCall = () => {
+    if (!ussdLink) return;
+    window.location.href = ussdLink;
+    setLaunched(true);
+  };
+
+  // L'effet se contente de démarrer/nettoyer l'intervalle. Toute mise à jour
+  // d'état se fait à l'intérieur du callback du tick, jamais en synchrone
+  // au premier passage du corps de l'effet.
+  useEffect(() => {
+    if (!ussdLink) return;
+
+    const tick = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(tick);
+          window.location.href = ussdLink;
+          setLaunched(true);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(tick);
+  }, [ussdLink]);
 
   async function handleCopy(value: string, field: "amount" | "number") {
     try {
@@ -62,17 +95,9 @@ export function MvolaPaymentContent({
     { icon: Smartphone, content: t("payment.mvolaStep1") },
     { icon: Send, content: t("payment.mvolaStep2") },
     { icon: Hash, content: t("payment.mvolaStep3") },
-    {
-      icon: Wallet,
-      content: (
-        <>
-          {t("payment.mvolaStep4")}:{" "}
-          <strong className="font-semibold text-stone-900">
-            {safeAmount.toLocaleString("fr-FR")} Ar
-          </strong>
-        </>
-      ),
-    },
+    { icon: Wallet, content: (
+        <>{t("payment.mvolaStep4")}: <strong className="font-semibold text-stone-900">{safeAmount.toLocaleString("fr-FR")} Ar</strong></>
+      ) },
     { icon: Lock, content: t("payment.mvolaStep5") },
     { icon: MessageSquare, content: t("payment.mvolaStep6") },
   ];
@@ -81,11 +106,9 @@ export function MvolaPaymentContent({
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-stone-50 px-4 py-10 sm:py-14">
       <div className="mx-auto max-w-md">
 
-        {/* Indicateur de progression */}
         <div className="mb-6 flex items-center justify-center gap-2 text-xs font-medium">
           <span className="flex items-center gap-1.5 text-emerald-600">
-            <CheckCircle className="h-3.5 w-3.5" />
-            {t("payment.mvolaStepOrder")}
+            <CheckCircle className="h-3.5 w-3.5" />{t("payment.mvolaStepOrder")}
           </span>
           <span className="h-px w-6 bg-stone-300" />
           <span className="flex items-center gap-1.5 text-amber-700">
@@ -97,40 +120,27 @@ export function MvolaPaymentContent({
           </span>
           <span className="h-px w-6 bg-stone-300" />
           <span className="flex items-center gap-1.5 text-stone-400">
-            <Clock className="h-3.5 w-3.5" />
-            {t("payment.mvolaStepVerify")}
+            <Clock className="h-3.5 w-3.5" />{t("payment.mvolaStepVerify")}
           </span>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-xl shadow-amber-900/5">
-
-          {/* Bandeau montant */}
           <div className="relative overflow-hidden bg-gradient-to-br from-amber-600 via-amber-700 to-amber-900 px-6 py-9 text-center text-white">
             <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5" />
             <div className="pointer-events-none absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-white/5" />
-
             <div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10">
               <Smartphone className="h-5 w-5" />
             </div>
-
-            <p className="relative text-xs font-medium uppercase tracking-widest text-amber-100">
-              {t("payment.mvolaAmount")}
-            </p>
-
+            <p className="relative text-xs font-medium uppercase tracking-widest text-amber-100">{t("payment.mvolaAmount")}</p>
             <div className="relative mt-1 flex items-center justify-center gap-2">
               <p className="text-4xl font-extrabold tracking-tight">
-                {safeAmount.toLocaleString("fr-FR")}{" "}
-                <span className="text-lg font-semibold text-amber-100">Ar</span>
+                {safeAmount.toLocaleString("fr-FR")} <span className="text-lg font-semibold text-amber-100">Ar</span>
               </p>
-              <button
-                onClick={() => handleCopy(String(safeAmount), "amount")}
-                aria-label="Copier le montant"
-                className="rounded-full bg-white/10 p-1.5 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-              >
+              <button onClick={() => handleCopy(String(safeAmount), "amount")} aria-label="Copier le montant"
+                className="rounded-full bg-white/10 p-1.5 transition hover:bg-white/20">
                 {copiedField === "amount" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
             </div>
-
             <div className="relative mt-2 space-y-0.5">
               {lineItems.map((li, i) => (
                 <p key={i} className="truncate text-sm text-amber-100/90">
@@ -140,16 +150,11 @@ export function MvolaPaymentContent({
             </div>
           </div>
 
-          {/* Numéro destinataire — chip copiable */}
           <div className="border-b border-stone-100 px-6 py-5">
-            <button
-              onClick={() => handleCopy(sellerMvolaNumber, "number")}
-              className="group flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left transition hover:border-amber-300 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-            >
+            <button onClick={() => handleCopy(sellerMvolaNumber, "number")}
+              className="group flex w-full items-center justify-between rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left transition hover:border-amber-300 hover:bg-amber-50">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
-                  {t("payment.mvolaNumber")}
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{t("payment.mvolaNumber")}</p>
                 <p className="font-mono text-base font-bold text-stone-900">{sellerMvolaNumber}</p>
               </div>
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-stone-400 shadow-sm transition group-hover:text-amber-700">
@@ -158,29 +163,34 @@ export function MvolaPaymentContent({
             </button>
           </div>
 
-          {/* Bouton d'appel automatique — détecte l'opérateur du client */}
           {ussdLink && (
             <div className="px-6 pt-5">
-              <a
-                href={ussdLink}
+              <button
+                onClick={launchCall}
                 className={`flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${theme.from} ${theme.to} px-4 py-3.5 text-sm font-semibold text-white shadow-md transition active:scale-[0.98]`}
               >
                 <PhoneCall className="h-4 w-4" />
-                Payer maintenant avec {operatorLabel(operator)}
-              </a>
-              {operator === "UNKNOWN" && (
-                <p className="mt-2 text-center text-xs text-stone-400">
-                  Opérateur non reconnu — compose le code manuellement ci-dessous.
-                </p>
-              )}
+                {autoState === "counting" && `Appel automatique dans ${countdown}s…`}
+                {autoState === "launched" && `Rappeler avec ${operatorLabel(operator)}`}
+                {autoState === "idle" && `Payer avec ${operatorLabel(operator)}`}
+              </button>
+              <p className="mt-2 text-center text-xs text-stone-400">
+                {autoState === "launched"
+                  ? "Saisis ton code secret sur l'écran qui vient de s'ouvrir."
+                  : "Si rien ne s'ouvre automatiquement, appuie sur le bouton."}
+              </p>
+            </div>
+          )}
+          {!ussdLink && (
+            <div className="px-6 pt-5">
+              <p className="rounded-xl bg-amber-50 px-4 py-3 text-center text-xs text-amber-800">
+                Numéro non reconnu — compose le code manuellement ci-dessous.
+              </p>
             </div>
           )}
 
-          {/* Instructions manuelles */}
           <div className="px-6 py-6">
-            <h2 className="mb-4 text-sm font-semibold text-stone-800">
-              {t("payment.mvolaInstructions")}
-            </h2>
+            <h2 className="mb-4 text-sm font-semibold text-stone-800">{t("payment.mvolaInstructions")}</h2>
             <div className="relative space-y-5">
               <div className="absolute left-5 top-2 bottom-2 w-px bg-gradient-to-b from-amber-200 via-amber-200 to-transparent" />
               {steps.map((step, i) => {

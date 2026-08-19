@@ -1,63 +1,72 @@
 export type MobileOperator = "TELMA" | "ORANGE" | "AIRTEL" | "UNKNOWN";
 
-const PREFIX_MAP: Record<string, MobileOperator> = {
-  "034": "TELMA",
-  "038": "TELMA",
-  "032": "ORANGE",
-  "037": "ORANGE",
-  "033": "AIRTEL",
-};
-
-function normalize(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("261")) return "0" + digits.slice(3);
-  if (digits.startsWith("0")) return digits;
-  return "0" + digits;
+/** Normalise un numéro malgache en format local 0XXXXXXXXX */
+function normalizePhone(raw: string): string {
+  let digits = raw.replace(/[^\d]/g, "");
+  if (digits.startsWith("261")) digits = digits.slice(3);
+  if (!digits.startsWith("0")) digits = `0${digits}`;
+  return digits;
 }
 
-export function detectOperator(phone: string): MobileOperator {
-  const local = normalize(phone);
-  const prefix = local.slice(0, 3);
-  return PREFIX_MAP[prefix] ?? "UNKNOWN";
-}
-
-/**
- * ⚠️ Codes USSD à VÉRIFIER avec un vrai téléphone avant mise en prod.
- */
-export function buildUssdLink(operator: MobileOperator, recipientNumber: string, amount: number): string {
-  const recipient = normalize(recipientNumber);
-  const amt = Math.round(amount);
-
-  switch (operator) {
-    case "TELMA":
-      return `tel:*111*1*1*${recipient}*${amt}%23`;
-    case "ORANGE":
-      return `tel:%23144*1*${recipient}*${amt}%23`;
-    case "AIRTEL":
-      return `tel:*436*${recipient}*${amt}%23`;
-    default:
-      return `tel:${recipient}`;
-  }
+/** 034/038 = Telma (MVola) · 032/037 = Orange Money · 033 = Airtel Money */
+export function detectOperator(rawPhone: string): MobileOperator {
+  const prefix = normalizePhone(rawPhone).slice(0, 3);
+  if (prefix === "034" || prefix === "038") return "TELMA";
+  if (prefix === "032" || prefix === "037") return "ORANGE";
+  if (prefix === "033") return "AIRTEL";
+  return "UNKNOWN";
 }
 
 export function operatorLabel(operator: MobileOperator): string {
-  return {
-    TELMA: "Telma (Mvola)",
-    ORANGE: "Orange Money",
-    AIRTEL: "Airtel Money",
-    UNKNOWN: "Opérateur non reconnu",
-  }[operator];
+  switch (operator) {
+    case "TELMA": return "MVola (Telma)";
+    case "ORANGE": return "Orange Money";
+    case "AIRTEL": return "Airtel Money";
+    default: return "votre opérateur";
+  }
 }
 
 export function operatorTheme(operator: MobileOperator) {
   switch (operator) {
-    case "TELMA":
-      return { from: "from-amber-500", to: "to-amber-700", text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-300" };
-    case "ORANGE":
-      return { from: "from-orange-500", to: "to-orange-700", text: "text-orange-700", bg: "bg-orange-50", border: "border-orange-300" };
-    case "AIRTEL":
-      return { from: "from-red-500", to: "to-red-700", text: "text-red-700", bg: "bg-red-50", border: "border-red-300" };
-    default:
-      return { from: "from-stone-400", to: "to-stone-600", text: "text-stone-700", bg: "bg-stone-50", border: "border-stone-300" };
+    case "TELMA": return { from: "from-red-600", to: "to-orange-600" };
+    case "ORANGE": return { from: "from-orange-500", to: "to-orange-700" };
+    case "AIRTEL": return { from: "from-red-700", to: "to-red-900" };
+    default: return { from: "from-stone-500", to: "to-stone-700" };
   }
+}
+
+/**
+ * Construit le lien tel: avec le code USSD pré-rempli (destinataire + montant).
+ * Le client appuie sur "Appeler" (ou ça se lance tout seul) puis tape SON code
+ * secret sur l'écran natif du téléphone — cette étape ne peut pas et ne doit
+ * jamais transiter par le web, pour sa sécurité.
+ *
+ * ⚠️ Ces chemins de menu sont ceux publiés par les opérateurs mi-2026. Ils
+ * changent parfois de structure — teste avec un vrai petit transfert avant
+ * de mettre en prod, et ajuste si besoin.
+ */
+export function buildUssdLink(
+  operator: MobileOperator,
+  destinationNumber: string,
+  amount: number
+): string | null {
+  const dest = normalizePhone(destinationNumber);
+  const amt = Math.round(amount);
+  let code: string | null = null;
+
+  switch (operator) {
+    case "TELMA":  // #111# → 2 Transférer argent → numéro → montant
+      code = `#111*2*${dest}*${amt}#`;
+      break;
+    case "ORANGE": // #144# → 1 Transfert d'argent → numéro → montant
+      code = `#144*1*${dest}*${amt}#`;
+      break;
+    case "AIRTEL": // *436# → 2 Transférer → 1 vers Airtel Money → numéro → montant
+      code = `*436*2*1*${dest}*${amt}#`;
+      break;
+    default:
+      return null;
+  }
+
+  return `tel:${encodeURIComponent(code)}`; // encode les # pour le lien tel:
 }

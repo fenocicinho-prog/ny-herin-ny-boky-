@@ -10,7 +10,7 @@ import { useCart } from '@/lib/CartContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { formatPrice, MOBILE_MONEY_PHONE } from '@/lib/constants';
 import { useSessionUser } from '@/lib/useSessionUser';
-import { redirectTo } from '@/lib/redirect';
+import { createCartOrderAction } from '@/app/actions/orders';
 
 export default function CartPage() {
   const router = useRouter();
@@ -25,8 +25,6 @@ export default function CartPage() {
   const total = getTotalPrice();
   const groupedByVendor = getGroupedByVendor();
   const vendorCount = Object.keys(groupedByVendor).length;
-
-  
 
   const handleCheckout = async () => {
     if (!user?.id) {
@@ -43,46 +41,43 @@ export default function CartPage() {
 
     setIsLoading(true);
 
+    const formData = new FormData();
+    formData.set(
+      'items',
+      JSON.stringify(
+        items.map((item) => ({
+          bookId: item.bookId,
+          type: item.type,
+          quantity: item.quantity,
+        }))
+      )
+    );
+    formData.set('paymentMethod', paymentMethod);
+    if (paymentMethod === 'MOBILE_MONEY') formData.set('phoneNumber', phoneNumber);
+
     try {
-      const response = await fetch('/api/checkout/create-multi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((item) => ({
-            bookId: item.bookId,
-            type: item.type,
-            quantity: item.quantity,
-            price: item.price,
-            vendorId: item.vendorId,
-          })),
-          totalAmount: total,
-          paymentMethod,
-          ...(paymentMethod === 'MOBILE_MONEY' && { phoneNumber }),
-        }),
-      });
+      // Le prix affiché ici est purement indicatif — le serveur recalcule tout
+      // depuis la base avant de créer la commande, donc pas de risque de
+      // manipulation du montant côté client.
+      //
+      // En cas de succès, createCartOrderAction termine par un redirect()
+      // côté serveur : Next.js navigue automatiquement vers Stripe ou vers
+      // /client/paiement-mvola/{id}, et le code après l'appel ne s'exécute
+      // jamais dans ce cas. On vide donc le panier juste avant l'appel.
+      clearCart();
 
-      const data = await response.json();
+      const result = await createCartOrderAction(formData);
 
-      if (data.error) {
-        alert(t('cart_error_prefix') + data.error);
-        setIsLoading(false);
-        return;
-      }
-
-      if (data.stripeUrl) {
-          redirectTo(data.stripeUrl);
-        } else if (data.mvolaUrl) {
-          clearCart();
-          router.push(data.mvolaUrl);
-        } else {
-          alert(t('cart_error_checkout'));
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Erreur checkout:', error);
-        alert(t('cart_error_payment'));
+      // On n'arrive ici que si l'action est revenue SANS rediriger, donc en erreur.
+      if (result?.error) {
+        alert(t('cart_error_prefix') + result.error);
         setIsLoading(false);
       }
+    } catch (error) {
+      console.error('Erreur checkout:', error);
+      alert(t('cart_error_payment'));
+      setIsLoading(false);
+    }
   };
 
   if (items.length === 0) {
@@ -254,14 +249,14 @@ export default function CartPage() {
                 </button>
               </div>
 
-              {paymentMethod === "MOBILE_MONEY" && (
+              {paymentMethod === 'MOBILE_MONEY' && (
                 <>
-                  <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-                    {t("order.sendTo")}: <strong>{MOBILE_MONEY_PHONE}</strong>
+                  <div className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+                    {t('order.sendTo')}: <strong>{MOBILE_MONEY_PHONE}</strong>
                   </div>
-                  <div>
+                  <div className="mt-3">
                     <label className="text-sm font-medium text-stone-700">
-                      {t("order.phone")}
+                      {t('order.phone')}
                     </label>
                     <input
                       type="tel"
@@ -274,7 +269,6 @@ export default function CartPage() {
                   </div>
                 </>
               )}
-
             </div>
 
             <button
