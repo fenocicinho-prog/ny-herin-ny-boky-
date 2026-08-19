@@ -83,6 +83,7 @@ export const translations = {
   "header.search": "Hitady boky...",
   "header.searchPlaceholder": "Ahoana no hitadiavanao?",
 
+  "vendorDashboard.overview": "Dashboard",
   // ===== PAGE D'ACCUEIL =====
   "home.hero.title": "Ny herin'ny boky",
   "home.hero.subtitle": "Mino izahay fa ny fahafahana mahazo boky mety dia afaka manokatra sehatra vaovao, manitatra ny fahalalana ary manampy amin'ny fanovana ny fiainana.",

@@ -81,6 +81,8 @@ export const translationsFr: Record<string, string> = {
   "nav.profile": "Mon profil",
   "nav.menu": "Menu",
 
+  "vendorDashboard.overview": "Dashboard",
+
   // HEADER
   "header.siteName": "La force des livres",
   "header.search": "Rechercher un livre...",
