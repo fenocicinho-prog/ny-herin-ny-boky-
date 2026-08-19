@@ -208,7 +208,7 @@ export function BookActions({ book }: BookActionsProps) {
                       type="tel"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="+261 34 XX XXX XX"
+                      placeholder="+261 34 XX XXX XX/ +261 33 XX XXX XX/ +261 32 XX XXX XX/ +261 37 XX XXX XX/ +261 38 XX XXX XX"
                       required
                       className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
                     />
