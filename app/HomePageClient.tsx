@@ -25,7 +25,7 @@ export default function HomePageClient({ books, vendors }: HomePageClientProps) 
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+    /*<div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
       <Header />
 
       {/* Hero */}
@@ -110,6 +110,6 @@ export default function HomePageClient({ books, vendors }: HomePageClientProps) 
         </div>
         <div className="text-white">Dj Cicinho genius</div>
       </footer>
-    </div>
+    </div>*/
   );
 }
